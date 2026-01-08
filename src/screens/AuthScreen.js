@@ -15,7 +15,7 @@ import { COLORS, SPACING, TYPOGRAPHY, SHADOWS } from '../styles/theme';
 import { hashPassword, generateId } from '../utils/crypto';
 import { saveUser, getUserByUsername } from '../services/storage';
 
-export default function AuthScreen() {
+export default function AuthScreen({ onLogin }) {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
@@ -81,6 +81,8 @@ export default function AuthScreen() {
                                 setUsername('');
                                 setPassword('');
                                 setConfirmPassword('');
+                                // Trigger navigation
+                                onLogin();
                             },
                         },
                     ]
