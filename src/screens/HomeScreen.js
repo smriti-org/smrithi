@@ -1,14 +1,26 @@
-import React from 'react';
-import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, Linking } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, Linking, FlatList } from 'react-native';
 import { COLORS, SPACING, TYPOGRAPHY, SHADOWS } from '../styles/theme';
+import { getPosts } from '../services/storage';
 
-export default function HomeScreen() {
-    // Static data for the card
+export default function HomeScreen({ onCreatePost }) {
+    const [posts, setPosts] = useState([]);
+
+    useEffect(() => {
+        loadPosts();
+    }, []);
+
+    const loadPosts = async () => {
+        const loadedPosts = await getPosts();
+        setPosts(loadedPosts);
+    };
+
+    // Static data for the featured card
     const cardData = {
         title: 'The Power of Mindfulness',
         author: 'By Thich Nhat Hanh',
         description: 'Mindfulness is the basic human ability to be fully present, aware of where we are and what we’re doing, and not overly reactive or overwhelmed by what’s going on around us.',
-        imageUri: 'https://picsum.photos/id/10/800/400', // Reliable nature image
+        imageUri: 'https://picsum.photos/id/10/800/400',
         links: [
             { label: 'Watch on YouTube', url: 'https://www.youtube.com', icon: require('../../assets/youtube-icon.png') },
             { label: 'Follow on Instagram', url: 'https://www.instagram.com', icon: require('../../assets/instagram-icon.png') },
@@ -17,7 +29,6 @@ export default function HomeScreen() {
     };
 
     const handleLinkPress = async (url) => {
-        // Check if the link is supported
         const supported = await Linking.canOpenURL(url);
         if (supported) {
             await Linking.openURL(url);
@@ -26,18 +37,16 @@ export default function HomeScreen() {
         }
     };
 
-    return (
-        <View style={styles.container}>
-            {/* Header */}
+    const renderHeader = () => (
+        <View>
             <View style={styles.header}>
                 <Text style={styles.headerTitle}>Hari Om</Text>
                 <Text style={styles.headerSubtitle}>Daily Reflections</Text>
             </View>
 
-            <ScrollView contentContainerStyle={styles.scrollContent}>
-                {/* Static Card */}
+            <View style={styles.sectionContainer}>
+                <Text style={styles.sectionTitle}>Daily Inspiration</Text>
                 <View style={styles.card}>
-                    {/* Card Image */}
                     <Image
                         source={{ uri: cardData.imageUri }}
                         style={styles.cardImage}
@@ -45,16 +54,10 @@ export default function HomeScreen() {
                     />
 
                     <View style={styles.cardContent}>
-                        {/* Card Title */}
                         <Text style={styles.cardTitle}>{cardData.title}</Text>
-
-                        {/* Card Text */}
                         <Text style={styles.cardText}>{cardData.description}</Text>
-
-                        {/* Author Name */}
                         <Text style={styles.authorText}>{cardData.author}</Text>
 
-                        {/* External Links */}
                         <View style={styles.linksContainer}>
                             <Text style={styles.linksHeader}>Additional Resources:</Text>
                             <View style={styles.linkButtonsRow}>
@@ -72,7 +75,34 @@ export default function HomeScreen() {
                         </View>
                     </View>
                 </View>
-            </ScrollView>
+            </View>
+
+            {posts.length > 0 && <Text style={[styles.sectionTitle, { paddingHorizontal: SPACING.md }]}>My Reflections</Text>}
+        </View>
+    );
+
+    const renderPostItem = ({ item }) => (
+        <View style={styles.postCard}>
+            <Text style={styles.postTitle}>{item.title}</Text>
+            <Text style={styles.postDate}>{new Date(item.date).toLocaleDateString()}</Text>
+            <Text style={styles.postDescription}>{item.description}</Text>
+        </View>
+    );
+
+    return (
+        <View style={styles.container}>
+            <FlatList
+                data={posts}
+                renderItem={renderPostItem}
+                keyExtractor={(item) => item.id || item.date}
+                ListHeaderComponent={renderHeader}
+                contentContainerStyle={styles.scrollContent}
+            />
+
+            {/* FAB (Floating Action Button) */}
+            <TouchableOpacity style={styles.fab} onPress={onCreatePost}>
+                <Text style={styles.fabText}>+</Text>
+            </TouchableOpacity>
         </View>
     );
 }
@@ -81,7 +111,7 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: COLORS.background,
-        paddingTop: 50, // Safe area padding
+        paddingTop: 50,
     },
     header: {
         paddingHorizontal: SPACING.lg,
@@ -100,19 +130,28 @@ const styles = StyleSheet.create({
         fontSize: 14,
     },
     scrollContent: {
+        paddingBottom: 80, // Space for FAB
+    },
+    sectionContainer: {
         padding: SPACING.md,
+    },
+    sectionTitle: {
+        ...TYPOGRAPHY.heading,
+        color: COLORS.secondary,
+        marginBottom: SPACING.sm,
+        fontSize: 18,
     },
     card: {
         backgroundColor: COLORS.card,
         borderRadius: 12,
         ...SHADOWS.medium,
-        overflow: 'hidden', // Ensures image respects border radius
+        overflow: 'hidden',
         marginBottom: SPACING.lg,
     },
     cardImage: {
         width: '100%',
         height: 200,
-        backgroundColor: COLORS.border, // Placeholder color while loading
+        backgroundColor: COLORS.border,
     },
     cardContent: {
         padding: SPACING.md,
@@ -128,6 +167,13 @@ const styles = StyleSheet.create({
         color: COLORS.text,
         lineHeight: 22,
         marginBottom: SPACING.md,
+    },
+    authorText: {
+        ...TYPOGRAPHY.caption,
+        fontStyle: 'italic',
+        marginTop: -SPACING.sm,
+        marginBottom: SPACING.md,
+        color: COLORS.primary,
     },
     linksContainer: {
         marginTop: SPACING.xs,
@@ -159,11 +205,48 @@ const styles = StyleSheet.create({
         color: COLORS.background,
         fontWeight: '600',
     },
-    authorText: {
-        ...TYPOGRAPHY.caption,
-        fontStyle: 'italic',
-        marginTop: -SPACING.sm,
+    // New Styles for Posts and FAB
+    postCard: {
+        backgroundColor: COLORS.card,
+        padding: SPACING.md,
+        marginHorizontal: SPACING.md,
         marginBottom: SPACING.md,
-        color: COLORS.primary,
+        borderRadius: 12,
+        ...SHADOWS.small,
+        borderLeftWidth: 4,
+        borderLeftColor: COLORS.primary,
+    },
+    postTitle: {
+        ...TYPOGRAPHY.heading,
+        fontSize: 18,
+        color: COLORS.text,
+        marginBottom: 4,
+    },
+    postDate: {
+        ...TYPOGRAPHY.caption,
+        color: COLORS.textLight,
+        marginBottom: 8,
+    },
+    postDescription: {
+        ...TYPOGRAPHY.body,
+        fontSize: 14,
+        color: COLORS.text,
+    },
+    fab: {
+        position: 'absolute',
+        bottom: 24,
+        right: 24,
+        width: 56,
+        height: 56,
+        borderRadius: 28,
+        backgroundColor: COLORS.primary,
+        justifyContent: 'center',
+        alignItems: 'center',
+        ...SHADOWS.medium,
+    },
+    fabText: {
+        fontSize: 32,
+        color: COLORS.background,
+        paddingBottom: 4, // Visual alignment
     },
 });

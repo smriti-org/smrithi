@@ -62,3 +62,34 @@ export const clearAllData = async () => {
         return false;
     }
 };
+
+/**
+ * Save a new post
+ * @param {Object} post 
+ */
+export const savePost = async (post) => {
+    try {
+        const posts = await getPosts();
+        // Add ID if missing
+        const newPost = { ...post, id: Date.now().toString() };
+        const updatedPosts = [newPost, ...posts];
+        await AsyncStorage.setItem(`${STORAGE_KEY}:posts`, JSON.stringify(updatedPosts));
+        return true;
+    } catch (e) {
+        console.error('Error saving post:', e);
+        return false;
+    }
+};
+
+/**
+ * Get all posts
+ */
+export const getPosts = async () => {
+    try {
+        const jsonValue = await AsyncStorage.getItem(`${STORAGE_KEY}:posts`);
+        return jsonValue != null ? JSON.parse(jsonValue) : [];
+    } catch (e) {
+        console.error('Error reading posts:', e);
+        return [];
+    }
+};
