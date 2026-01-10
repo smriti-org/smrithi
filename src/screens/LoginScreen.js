@@ -12,57 +12,37 @@ import {
     ActivityIndicator,
 } from 'react-native';
 import { COLORS, SPACING, TYPOGRAPHY, SHADOWS } from '../styles/theme';
-import { hashPassword, generateId } from '../utils/crypto';
-import { saveUser, getUserByUsername } from '../services/storage';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-export default function AuthScreen({ onLogin, onBackToLanding }) {
+export default function LoginScreen({ onLogin, onBackToLanding }) {
     const [username, setUsername] = useState('');
-    const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [confirmPassword, setConfirmPassword] = useState('');
     const [loading, setLoading] = useState(false);
 
     const validateInputs = () => {
         if (!username.trim()) {
-            Alert.alert('Validation Error', 'Please enter a username');
-            return false;
-        }
-        if (username.trim().length < 3) {
-            Alert.alert('Validation Error', 'Username must be at least 3 characters');
-            return false;
-        }
-        if (!email.trim() || !email.includes('@')) {
-            Alert.alert('Validation Error', 'Please enter a valid email address');
+            Alert.alert('Validation Error', 'Please enter your username');
             return false;
         }
         if (!password) {
-            Alert.alert('Validation Error', 'Please enter a password');
-            return false;
-        }
-        if (password.length < 6) {
-            Alert.alert('Validation Error', 'Password must be at least 6 characters');
-            return false;
-        }
-        if (password !== confirmPassword) {
-            Alert.alert('Validation Error', 'Passwords do not match');
+            Alert.alert('Validation Error', 'Please enter your password');
             return false;
         }
         return true;
     };
 
-    const handleSignUp = async () => {
+    const handleLogin = async () => {
         if (!validateInputs()) return;
 
         setLoading(true);
         try {
-            const response = await fetch('https://smriti-backend-r293.onrender.com/api/auth/signup', {
-                method: 'POST',
+            const response = await fetch('https://smriti-backend-r293.onrender.com/api/auth/login', {
+                method: 'POST', // Usually login is POST. If it fails, we can check if they really meant GET.
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
                     username: username.trim(),
-                    email: email.trim(),
                     password: password,
                 }),
             });
@@ -70,47 +50,28 @@ export default function AuthScreen({ onLogin, onBackToLanding }) {
             const data = await response.json();
 
             if (response.ok && data.success) {
-                // Determine what to save. The API returns { data: { token, user: {...} } } based on user provided JSON.
-                // Or simply { data: { ..., token: "..." } } 
-                // Let's assume the structure provided: { success: true, data: { userId, username, email, token } }
-
-                // We should save the token for future requests
+                // Save token and user data
                 const { token, ...userData } = data.data;
-
-                // For now, we can still use saveUser to simulate "session" or just use AsyncStorage directly
-                // But let's stick to the convention of our storage service if possible, or just direct save since structure changed.
-                // Let's modify storage service LATER to handle tokens properly.
-                // For now, save "user" object as "active session".
-
-                // Import AsyncStorage locally to avoid modifying storage.js right now for token
-                const AsyncStorage = require('@react-native-async-storage/async-storage').default;
                 await AsyncStorage.setItem('user_token', token);
                 await AsyncStorage.setItem('user_data', JSON.stringify(userData));
 
                 Alert.alert(
-                    'Success! 🙏',
-                    `Welcome to Smriti, ${username}!\n\n${data.message}`,
+                    'Welcome Back! 🙏',
+                    `Namaste, ${username}!`,
                     [
                         {
                             text: 'OK',
                             onPress: () => {
-                                // Clear form
-                                setUsername('');
-                                setEmail('');
-                                setPassword('');
-                                setConfirmPassword('');
-                                // Trigger navigation
                                 onLogin();
                             },
                         },
                     ]
                 );
             } else {
-                // Handle API errors (e.g., "Username already taken")
-                Alert.alert('Sign Up Failed', data.error || data.message || 'Something went wrong');
+                Alert.alert('Login Failed', data.error || data.message || 'Invalid username or password');
             }
         } catch (error) {
-            console.error('Sign up error:', error);
+            console.error('Login error:', error);
             Alert.alert('Error', 'Unable to connect to server. Please check your internet connection.');
         } finally {
             setLoading(false);
@@ -129,20 +90,17 @@ export default function AuthScreen({ onLogin, onBackToLanding }) {
                 {/* Header */}
                 <View style={styles.header}>
                     <Text style={styles.logo}>🌳</Text>
-                    <Text style={styles.title}>Smriti</Text>
-                    <Text style={styles.subtitle}>स्मृति</Text>
-                    <Text style={styles.tagline}>A space for reflection</Text>
+                    <Text style={styles.title}>Welcome Back</Text>
+                    <Text style={styles.subtitle}>Enter your details to continue</Text>
                 </View>
 
-                {/* Sign Up Form */}
+                {/* Login Form */}
                 <View style={styles.formContainer}>
-                    <Text style={styles.formTitle}>Create Account</Text>
-
                     <View style={styles.inputGroup}>
                         <Text style={styles.label}>Username</Text>
                         <TextInput
                             style={styles.input}
-                            placeholder="Enter username (min 3 characters)"
+                            placeholder="Enter username"
                             placeholderTextColor={COLORS.textLight}
                             value={username}
                             onChangeText={setUsername}
@@ -153,25 +111,10 @@ export default function AuthScreen({ onLogin, onBackToLanding }) {
                     </View>
 
                     <View style={styles.inputGroup}>
-                        <Text style={styles.label}>Email</Text>
-                        <TextInput
-                            style={styles.input}
-                            placeholder="Enter email address"
-                            placeholderTextColor={COLORS.textLight}
-                            value={email}
-                            onChangeText={setEmail}
-                            keyboardType="email-address"
-                            autoCapitalize="none"
-                            autoCorrect={false}
-                            editable={!loading}
-                        />
-                    </View>
-
-                    <View style={styles.inputGroup}>
                         <Text style={styles.label}>Password</Text>
                         <TextInput
                             style={styles.input}
-                            placeholder="Enter password (min 6 characters)"
+                            placeholder="Enter password"
                             placeholderTextColor={COLORS.textLight}
                             value={password}
                             onChangeText={setPassword}
@@ -181,29 +124,15 @@ export default function AuthScreen({ onLogin, onBackToLanding }) {
                         />
                     </View>
 
-                    <View style={styles.inputGroup}>
-                        <Text style={styles.label}>Confirm Password</Text>
-                        <TextInput
-                            style={styles.input}
-                            placeholder="Re-enter password"
-                            placeholderTextColor={COLORS.textLight}
-                            value={confirmPassword}
-                            onChangeText={setConfirmPassword}
-                            secureTextEntry
-                            autoCapitalize="none"
-                            editable={!loading}
-                        />
-                    </View>
-
                     <TouchableOpacity
                         style={[styles.button, loading && styles.buttonDisabled]}
-                        onPress={handleSignUp}
+                        onPress={handleLogin}
                         disabled={loading}
                     >
                         {loading ? (
                             <ActivityIndicator color={COLORS.background} />
                         ) : (
-                            <Text style={styles.buttonText}>Sign Up</Text>
+                            <Text style={styles.buttonText}>Login</Text>
                         )}
                     </TouchableOpacity>
 
@@ -214,10 +143,6 @@ export default function AuthScreen({ onLogin, onBackToLanding }) {
                     >
                         <Text style={styles.backButtonText}>← Back to Landing</Text>
                     </TouchableOpacity>
-
-                    <Text style={styles.note}>
-                        Note: This is Phase 1 - Sign up only. Login now available too!
-                    </Text>
                 </View>
             </ScrollView>
         </KeyboardAvoidingView>
@@ -236,7 +161,7 @@ const styles = StyleSheet.create({
     },
     header: {
         alignItems: 'center',
-        marginBottom: SPACING.xxl,
+        marginBottom: SPACING.xl,
     },
     logo: {
         fontSize: 64,
@@ -244,31 +169,21 @@ const styles = StyleSheet.create({
     },
     title: {
         ...TYPOGRAPHY.title,
-        fontSize: 36,
+        fontSize: 32,
         fontWeight: '700',
         color: COLORS.primary,
         marginBottom: SPACING.xs,
     },
     subtitle: {
-        ...TYPOGRAPHY.heading,
-        fontSize: 18,
+        ...TYPOGRAPHY.body,
+        fontSize: 16,
         color: COLORS.secondary,
-        marginBottom: SPACING.sm,
-    },
-    tagline: {
-        ...TYPOGRAPHY.caption,
-        fontStyle: 'italic',
     },
     formContainer: {
         backgroundColor: COLORS.card,
         borderRadius: 16,
         padding: SPACING.lg,
         ...SHADOWS.medium,
-    },
-    formTitle: {
-        ...TYPOGRAPHY.heading,
-        marginBottom: SPACING.lg,
-        textAlign: 'center',
     },
     inputGroup: {
         marginBottom: SPACING.md,
@@ -302,12 +217,6 @@ const styles = StyleSheet.create({
         ...TYPOGRAPHY.body,
         color: COLORS.background,
         fontWeight: '600',
-    },
-    note: {
-        ...TYPOGRAPHY.caption,
-        textAlign: 'center',
-        marginTop: SPACING.md,
-        fontStyle: 'italic',
     },
     backButton: {
         marginTop: SPACING.lg,

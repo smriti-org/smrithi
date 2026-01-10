@@ -1,18 +1,43 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, Linking, FlatList } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, Linking, FlatList, Alert } from 'react-native';
 import { COLORS, SPACING, TYPOGRAPHY, SHADOWS } from '../styles/theme';
 import { getPosts } from '../services/storage';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-export default function HomeScreen({ onCreatePost }) {
+export default function HomeScreen({ onCreatePost, onLogout }) {
     const [posts, setPosts] = useState([]);
+    const [user, setUser] = useState(null);
 
     useEffect(() => {
         loadPosts();
+        loadUser();
     }, []);
 
     const loadPosts = async () => {
         const loadedPosts = await getPosts();
         setPosts(loadedPosts);
+    };
+
+    const loadUser = async () => {
+        try {
+            const userData = await AsyncStorage.getItem('user_data');
+            if (userData) {
+                setUser(JSON.parse(userData));
+            }
+        } catch (error) {
+            console.error('Error loading user data:', error);
+        }
+    };
+
+    const handleLogoutPress = () => {
+        Alert.alert(
+            'Logout',
+            'Are you sure you want to logout?',
+            [
+                { text: 'Cancel', style: 'cancel' },
+                { text: 'Logout', onPress: onLogout, style: 'destructive' }
+            ]
+        );
     };
 
     // Static data for the featured card
@@ -40,8 +65,28 @@ export default function HomeScreen({ onCreatePost }) {
     const renderHeader = () => (
         <View>
             <View style={styles.header}>
-                <Text style={styles.headerTitle}>Hari Om</Text>
-                <Text style={styles.headerSubtitle}>Daily Reflections</Text>
+                <View style={styles.headerTopRow}>
+                    <View>
+                        <Text style={styles.headerTitle}>Hari Om</Text>
+                        <Text style={styles.headerSubtitle}>Daily Reflections</Text>
+                    </View>
+
+                    <View style={styles.headerActions}>
+                        {user && (
+                            <View style={styles.userInfo}>
+                                <View style={styles.userIcon}>
+                                    <Text style={styles.userInitial}>
+                                        {user.username.charAt(0).toUpperCase()}
+                                    </Text>
+                                </View>
+                                <Text style={styles.usernameText}>{user.username}</Text>
+                            </View>
+                        )}
+                        <TouchableOpacity style={styles.logoutButton} onPress={handleLogoutPress}>
+                            <Text style={styles.logoutText}>Logout</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
             </View>
 
             <View style={styles.sectionContainer}>
@@ -119,6 +164,11 @@ const styles = StyleSheet.create({
         borderBottomWidth: 1,
         borderBottomColor: COLORS.border,
     },
+    headerTopRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+    },
     headerTitle: {
         ...TYPOGRAPHY.title,
         color: COLORS.primary,
@@ -128,6 +178,47 @@ const styles = StyleSheet.create({
         ...TYPOGRAPHY.body,
         color: COLORS.secondary,
         fontSize: 14,
+    },
+    headerActions: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: SPACING.sm,
+    },
+    logoutButton: {
+        padding: 6,
+    },
+    logoutText: {
+        ...TYPOGRAPHY.caption,
+        color: '#ff4444', // Red for logout
+        fontWeight: '600',
+    },
+    userInfo: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: COLORS.card,
+        padding: 6,
+        paddingHorizontal: 10,
+        borderRadius: 20,
+        ...SHADOWS.small,
+    },
+    userIcon: {
+        width: 28,
+        height: 28,
+        borderRadius: 14,
+        backgroundColor: COLORS.primary,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginRight: 8,
+    },
+    userInitial: {
+        color: COLORS.background,
+        fontSize: 14,
+        fontWeight: 'bold',
+    },
+    usernameText: {
+        ...TYPOGRAPHY.caption,
+        color: COLORS.text,
+        fontWeight: '600',
     },
     scrollContent: {
         paddingBottom: 80, // Space for FAB
