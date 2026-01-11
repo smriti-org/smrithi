@@ -46,11 +46,7 @@ export default function HomeScreen({ onCreatePost, onLogout }) {
         author: 'By Thich Nhat Hanh',
         description: 'Mindfulness is the basic human ability to be fully present, aware of where we are and what we’re doing, and not overly reactive or overwhelmed by what’s going on around us.',
         imageUri: 'https://picsum.photos/id/10/800/400',
-        links: [
-            { label: 'Watch on YouTube', url: 'https://www.youtube.com', icon: require('../../assets/youtube-icon.png') },
-            { label: 'Follow on Instagram', url: 'https://www.instagram.com', icon: require('../../assets/instagram-icon.png') },
-            { label: 'Read Article', url: 'https://www.mindful.org/what-is-mindfulness/', icon: require('../../assets/article-icon.png') }
-        ]
+        links: []
     };
 
     const handleLinkPress = async (url) => {
