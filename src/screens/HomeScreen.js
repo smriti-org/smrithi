@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, Linking, FlatList, Alert } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, Linking, FlatList, Alert, RefreshControl } from 'react-native';
 import { COLORS, SPACING, TYPOGRAPHY, SHADOWS } from '../styles/theme';
-import { getPosts } from '../services/storage';
+import { fetchPosts } from '../services/api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function HomeScreen({ onCreatePost, onLogout }) {
     const [posts, setPosts] = useState([]);
     const [user, setUser] = useState(null);
+    const [refreshing, setRefreshing] = useState(false);
 
     useEffect(() => {
         loadPosts();
@@ -14,8 +15,14 @@ export default function HomeScreen({ onCreatePost, onLogout }) {
     }, []);
 
     const loadPosts = async () => {
-        const loadedPosts = await getPosts();
+        const loadedPosts = await fetchPosts();
         setPosts(loadedPosts);
+    };
+
+    const handleRefresh = async () => {
+        setRefreshing(true);
+        await loadPosts();
+        setRefreshing(false);
     };
 
     const loadUser = async () => {
@@ -42,10 +49,10 @@ export default function HomeScreen({ onCreatePost, onLogout }) {
 
     // Static data for the featured card
     const cardData = {
-        title: 'The Power of Mindfulness',
-        author: 'By Thich Nhat Hanh',
-        description: 'Mindfulness is the basic human ability to be fully present, aware of where we are and what we’re doing, and not overly reactive or overwhelmed by what’s going on around us.',
-        imageUri: 'https://picsum.photos/id/10/800/400',
+        title: '🌱 Why Smriti exists?',
+        description: 'Smriti is a quiet digital space to pause, reflect, and remember. There are no likes, comments, or noise here.Only sincere learnings, gentle reminders, and shared reflections.',
+        imageUri: require('../../assets/daily_inspiration.png'),
+
         links: []
     };
 
@@ -86,10 +93,9 @@ export default function HomeScreen({ onCreatePost, onLogout }) {
             </View>
 
             <View style={styles.sectionContainer}>
-                <Text style={styles.sectionTitle}>Daily Inspiration</Text>
                 <View style={styles.card}>
                     <Image
-                        source={{ uri: cardData.imageUri }}
+                        source={cardData.imageUri}
                         style={styles.cardImage}
                         resizeMode="cover"
                     />
@@ -98,22 +104,6 @@ export default function HomeScreen({ onCreatePost, onLogout }) {
                         <Text style={styles.cardTitle}>{cardData.title}</Text>
                         <Text style={styles.cardText}>{cardData.description}</Text>
                         <Text style={styles.authorText}>{cardData.author}</Text>
-
-                        <View style={styles.linksContainer}>
-                            <Text style={styles.linksHeader}>Additional Resources:</Text>
-                            <View style={styles.linkButtonsRow}>
-                                {cardData.links.map((link, index) => (
-                                    <TouchableOpacity
-                                        key={index}
-                                        style={styles.linkButton}
-                                        onPress={() => handleLinkPress(link.url)}
-                                    >
-                                        <Image source={link.icon} style={{ width: 24, height: 24, marginRight: 8, borderRadius: 6 }} resizeMode="contain" />
-                                        <Text style={styles.linkButtonText}>{link.label}</Text>
-                                    </TouchableOpacity>
-                                ))}
-                            </View>
-                        </View>
                     </View>
                 </View>
             </View>
@@ -125,8 +115,10 @@ export default function HomeScreen({ onCreatePost, onLogout }) {
     const renderPostItem = ({ item }) => (
         <View style={styles.postCard}>
             <Text style={styles.postTitle}>{item.title}</Text>
-            <Text style={styles.postDate}>{new Date(item.date).toLocaleDateString()}</Text>
-            <Text style={styles.postDescription}>{item.description}</Text>
+            <Text style={styles.postDate}>
+                {new Date(item.createdAt || item.date).toLocaleDateString()}
+            </Text>
+            <Text style={styles.postDescription}>{item.textContent || item.description}</Text>
         </View>
     );
 
@@ -135,9 +127,16 @@ export default function HomeScreen({ onCreatePost, onLogout }) {
             <FlatList
                 data={posts}
                 renderItem={renderPostItem}
-                keyExtractor={(item) => item.id || item.date}
+                keyExtractor={(item) => item.postId || item.id || item.date}
                 ListHeaderComponent={renderHeader}
                 contentContainerStyle={styles.scrollContent}
+                refreshControl={
+                    <RefreshControl
+                        refreshing={refreshing}
+                        onRefresh={handleRefresh}
+                        tintColor={COLORS.primary}
+                    />
+                }
             />
 
             {/* FAB (Floating Action Button) */}

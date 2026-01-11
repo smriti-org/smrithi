@@ -6,7 +6,6 @@ import CreatePostScreen from './src/screens/CreatePostScreen';
 import AuthScreen from './src/screens/AuthScreen';
 import LandingScreen from './src/screens/LandingScreen';
 import LoginScreen from './src/screens/LoginScreen';
-import { savePost } from './src/services/storage';
 import { COLORS } from './src/styles/theme';
 
 export default function App() {
@@ -37,16 +36,10 @@ export default function App() {
       return (
         <CreatePostScreen
           onCancel={() => setCurrentScreen('HOME')}
-          onSave={async (post) => {
-            console.log('App: Saving post...', post);
-            const success = await savePost(post);
-            console.log('App: Save result:', success);
-            if (success) {
-              setCurrentScreen('HOME');
-            } else {
-              // Handle error (maybe show alert? For now just log)
-              console.error('App: Failed to save post');
-            }
+          onSave={(post) => {
+            // Post was successfully created via API in CreatePostScreen
+            // Just navigate back to HOME, which will refresh the posts list
+            setCurrentScreen('HOME');
           }}
         />
       );

@@ -1,24 +1,38 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, KeyboardAvoidingView, Platform, ScrollView, Alert } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, KeyboardAvoidingView, Platform, ScrollView, Alert, ActivityIndicator } from 'react-native';
 import { COLORS, SPACING, TYPOGRAPHY } from '../styles/theme';
+import { createPost } from '../services/api';
 
 export default function CreatePostScreen({ onSave, onCancel }) {
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
+    const [loading, setLoading] = useState(false);
 
-    const handleSave = () => {
+    const handleSave = async () => {
         if (!title.trim() || !description.trim()) {
             Alert.alert('Incomplete', 'Please fill in both title and description');
             return;
         }
-        // Create post object with timestamp
-        const newPost = {
-            title: title.trim(),
-            description: description.trim(),
-            author: 'Me', // Hardcoded for now until we have real user profiles
-            date: new Date().toISOString(),
-        };
-        onSave(newPost);
+
+        setLoading(true);
+        try {
+            const result = await createPost({
+                title: title.trim(),
+                textContent: description.trim()  // description maps to text_content in API
+            });
+
+            if (result.success) {
+                Alert.alert('Success', 'Your reflection has been saved!');
+                onSave(result.post);
+            } else {
+                Alert.alert('Error', result.error || 'Failed to save post. Please try again.');
+            }
+        } catch (error) {
+            Alert.alert('Error', 'An unexpected error occurred. Please try again.');
+            console.error('Error in handleSave:', error);
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -38,6 +52,7 @@ export default function CreatePostScreen({ onSave, onCancel }) {
                         onChangeText={setTitle}
                         maxLength={50}
                         placeholderTextColor={COLORS.textLight}
+                        editable={!loading}
                     />
                 </View>
 
@@ -51,16 +66,29 @@ export default function CreatePostScreen({ onSave, onCancel }) {
                         multiline
                         textAlignVertical="top"
                         placeholderTextColor={COLORS.textLight}
+                        editable={!loading}
                     />
                 </View>
 
                 <View style={styles.buttonRow}>
-                    <TouchableOpacity style={[styles.button, styles.cancelButton]} onPress={onCancel}>
+                    <TouchableOpacity
+                        style={[styles.button, styles.cancelButton]}
+                        onPress={onCancel}
+                        disabled={loading}
+                    >
                         <Text style={styles.cancelButtonText}>Cancel</Text>
                     </TouchableOpacity>
 
-                    <TouchableOpacity style={[styles.button, styles.saveButton]} onPress={handleSave}>
-                        <Text style={styles.saveButtonText}>Save Post</Text>
+                    <TouchableOpacity
+                        style={[styles.button, styles.saveButton, loading && styles.disabledButton]}
+                        onPress={handleSave}
+                        disabled={loading}
+                    >
+                        {loading ? (
+                            <ActivityIndicator color={COLORS.background} />
+                        ) : (
+                            <Text style={styles.saveButtonText}>Save Post</Text>
+                        )}
                     </TouchableOpacity>
                 </View>
 
@@ -123,6 +151,9 @@ const styles = StyleSheet.create({
     },
     saveButton: {
         backgroundColor: COLORS.primary,
+    },
+    disabledButton: {
+        opacity: 0.5,
     },
     cancelButtonText: {
         ...TYPOGRAPHY.body,
