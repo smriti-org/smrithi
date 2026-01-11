@@ -12,6 +12,29 @@ export default function App() {
   const [isLoggedIn, setIsLoggedIn] = React.useState(false);
   const [currentScreen, setCurrentScreen] = React.useState('HOME'); // 'HOME' or 'CREATE_POST'
   const [authMode, setAuthMode] = React.useState('LANDING'); // 'LANDING', 'SIGN_UP', 'LOGIN'
+  const [isCheckingAuth, setIsCheckingAuth] = React.useState(true); // Loading state
+
+  // Check for existing token on app mount (persistent login)
+  React.useEffect(() => {
+    checkExistingAuth();
+  }, []);
+
+  const checkExistingAuth = async () => {
+    try {
+      const AsyncStorage = require('@react-native-async-storage/async-storage').default;
+      const token = await AsyncStorage.getItem('user_token');
+
+      if (token) {
+        // Token exists, auto-login user
+        setIsLoggedIn(true);
+        setCurrentScreen('HOME');
+      }
+    } catch (error) {
+      console.error('Error checking auth:', error);
+    } finally {
+      setIsCheckingAuth(false);
+    }
+  };
 
   const handleLogout = async () => {
     try {
@@ -49,7 +72,11 @@ export default function App() {
   return (
     <View style={styles.container}>
       <StatusBar style="dark" />
-      {isLoggedIn ? (
+      {isCheckingAuth ? (
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          {/* Loading state while checking auth */}
+        </View>
+      ) : isLoggedIn ? (
         renderScreen()
       ) : authMode === 'LANDING' ? (
         <LandingScreen

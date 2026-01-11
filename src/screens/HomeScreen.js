@@ -115,9 +115,12 @@ export default function HomeScreen({ onCreatePost, onLogout }) {
     const renderPostItem = ({ item }) => (
         <View style={styles.postCard}>
             <Text style={styles.postTitle}>{item.title}</Text>
-            <Text style={styles.postDate}>
-                {new Date(item.createdAt || item.date).toLocaleDateString()}
-            </Text>
+            <View style={styles.postMeta}>
+                <Text style={styles.postAuthor}>Author: {item.author?.username || 'Unknown'}</Text>
+                <Text style={styles.postDate}>
+                    {new Date(item.createdAt || item.date).toLocaleDateString()}
+                </Text>
+            </View>
             <Text style={styles.postDescription}>{item.textContent || item.description}</Text>
         </View>
     );
@@ -308,10 +311,20 @@ const styles = StyleSheet.create({
         color: COLORS.text,
         marginBottom: 4,
     },
+    postMeta: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 8,
+    },
+    postAuthor: {
+        ...TYPOGRAPHY.caption,
+        color: COLORS.primary,
+        fontWeight: '600',
+    },
     postDate: {
         ...TYPOGRAPHY.caption,
         color: COLORS.textLight,
-        marginBottom: 8,
     },
     postDescription: {
         ...TYPOGRAPHY.body,
