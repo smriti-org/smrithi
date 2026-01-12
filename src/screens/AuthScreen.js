@@ -2,20 +2,19 @@ import React, { useState } from 'react';
 import {
     View,
     Text,
-    TextInput,
-    TouchableOpacity,
     StyleSheet,
     Alert,
     KeyboardAvoidingView,
     Platform,
     ScrollView,
-    ActivityIndicator,
 } from 'react-native';
 import { COLORS, SPACING, TYPOGRAPHY, SHADOWS } from '../styles/theme';
-import { hashPassword, generateId } from '../utils/crypto';
-import { saveUser, getUserByUsername } from '../services/storage';
+import { API_BASE_URL } from '../constants/config';
+import { useAuth } from '../hooks/useAuth';
+import { Input, Button } from '../components';
 
-export default function AuthScreen({ onLogin, onBackToLanding }) {
+export default function AuthScreen({ onBackToLanding }) {
+    const { login } = useAuth();
     const [username, setUsername] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -55,7 +54,7 @@ export default function AuthScreen({ onLogin, onBackToLanding }) {
 
         setLoading(true);
         try {
-            const response = await fetch('https://smriti-backend-r293.onrender.com/api/auth/signup', {
+            const response = await fetch(`${API_BASE_URL}/auth/signup`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -70,22 +69,10 @@ export default function AuthScreen({ onLogin, onBackToLanding }) {
             const data = await response.json();
 
             if (response.ok && data.success) {
-                // Determine what to save. The API returns { data: { token, user: {...} } } based on user provided JSON.
-                // Or simply { data: { ..., token: "..." } } 
-                // Let's assume the structure provided: { success: true, data: { userId, username, email, token } }
-
-                // We should save the token for future requests
                 const { token, ...userData } = data.data;
 
-                // For now, we can still use saveUser to simulate "session" or just use AsyncStorage directly
-                // But let's stick to the convention of our storage service if possible, or just direct save since structure changed.
-                // Let's modify storage service LATER to handle tokens properly.
-                // For now, save "user" object as "active session".
-
-                // Import AsyncStorage locally to avoid modifying storage.js right now for token
-                const AsyncStorage = require('@react-native-async-storage/async-storage').default;
-                await AsyncStorage.setItem('user_token', token);
-                await AsyncStorage.setItem('user_data', JSON.stringify(userData));
+                // Use AuthContext login method
+                await login(userData, token);
 
                 Alert.alert(
                     'Success! 🙏',
@@ -99,14 +86,11 @@ export default function AuthScreen({ onLogin, onBackToLanding }) {
                                 setEmail('');
                                 setPassword('');
                                 setConfirmPassword('');
-                                // Trigger navigation
-                                onLogin();
                             },
                         },
                     ]
                 );
             } else {
-                // Handle API errors (e.g., "Username already taken")
                 Alert.alert('Sign Up Failed', data.error || data.message || 'Something went wrong');
             }
         } catch (error) {
@@ -138,82 +122,51 @@ export default function AuthScreen({ onLogin, onBackToLanding }) {
                 <View style={styles.formContainer}>
                     <Text style={styles.formTitle}>Create Account</Text>
 
-                    <View style={styles.inputGroup}>
-                        <Text style={styles.label}>Username</Text>
-                        <TextInput
-                            style={styles.input}
-                            placeholder="Enter username (min 3 characters)"
-                            placeholderTextColor={COLORS.textLight}
-                            value={username}
-                            onChangeText={setUsername}
-                            autoCapitalize="none"
-                            autoCorrect={false}
-                            editable={!loading}
-                        />
-                    </View>
+                    <Input
+                        label="Username"
+                        value={username}
+                        onChangeText={setUsername}
+                        placeholder="Enter username (min 3 characters)"
+                    />
 
-                    <View style={styles.inputGroup}>
-                        <Text style={styles.label}>Email</Text>
-                        <TextInput
-                            style={styles.input}
-                            placeholder="Enter email address"
-                            placeholderTextColor={COLORS.textLight}
-                            value={email}
-                            onChangeText={setEmail}
-                            keyboardType="email-address"
-                            autoCapitalize="none"
-                            autoCorrect={false}
-                            editable={!loading}
-                        />
-                    </View>
+                    <Input
+                        label="Email"
+                        value={email}
+                        onChangeText={setEmail}
+                        placeholder="Enter email address"
+                        keyboardType="email-address"
+                    />
 
-                    <View style={styles.inputGroup}>
-                        <Text style={styles.label}>Password</Text>
-                        <TextInput
-                            style={styles.input}
-                            placeholder="Enter password (min 6 characters)"
-                            placeholderTextColor={COLORS.textLight}
-                            value={password}
-                            onChangeText={setPassword}
-                            secureTextEntry
-                            autoCapitalize="none"
-                            editable={!loading}
-                        />
-                    </View>
+                    <Input
+                        label="Password"
+                        value={password}
+                        onChangeText={setPassword}
+                        placeholder="Enter password (min 6 characters)"
+                        secureTextEntry
+                    />
 
-                    <View style={styles.inputGroup}>
-                        <Text style={styles.label}>Confirm Password</Text>
-                        <TextInput
-                            style={styles.input}
-                            placeholder="Re-enter password"
-                            placeholderTextColor={COLORS.textLight}
-                            value={confirmPassword}
-                            onChangeText={setConfirmPassword}
-                            secureTextEntry
-                            autoCapitalize="none"
-                            editable={!loading}
-                        />
-                    </View>
+                    <Input
+                        label="Confirm Password"
+                        value={confirmPassword}
+                        onChangeText={setConfirmPassword}
+                        placeholder="Re-enter password"
+                        secureTextEntry
+                    />
 
-                    <TouchableOpacity
-                        style={[styles.button, loading && styles.buttonDisabled]}
+                    <Button
+                        title="Sign Up"
                         onPress={handleSignUp}
-                        disabled={loading}
-                    >
-                        {loading ? (
-                            <ActivityIndicator color={COLORS.background} />
-                        ) : (
-                            <Text style={styles.buttonText}>Sign Up</Text>
-                        )}
-                    </TouchableOpacity>
+                        loading={loading}
+                        style={{ marginTop: SPACING.md }}
+                    />
 
-                    <TouchableOpacity
-                        style={styles.backButton}
+                    <Button
+                        title="← Back to Landing"
                         onPress={onBackToLanding}
+                        variant="outline"
                         disabled={loading}
-                    >
-                        <Text style={styles.backButtonText}>← Back to Landing</Text>
-                    </TouchableOpacity>
+                        style={{ marginTop: SPACING.lg }}
+                    />
 
                     <Text style={styles.note}>
                         Note: This is Phase 1 - Sign up only. Login now available too!

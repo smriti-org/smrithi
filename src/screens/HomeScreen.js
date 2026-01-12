@@ -1,40 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, Linking, FlatList, Alert, RefreshControl } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, Linking, Alert } from 'react-native';
 import { COLORS, SPACING, TYPOGRAPHY, SHADOWS } from '../styles/theme';
-import { fetchPosts } from '../services/api';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useAuth } from '../hooks/useAuth';
+import { usePosts } from '../hooks/usePosts';
+import { PostList } from '../components';
 
 export default function HomeScreen({ onCreatePost, onLogout }) {
-    const [posts, setPosts] = useState([]);
-    const [user, setUser] = useState(null);
-    const [refreshing, setRefreshing] = useState(false);
-
-    useEffect(() => {
-        loadPosts();
-        loadUser();
-    }, []);
-
-    const loadPosts = async () => {
-        const loadedPosts = await fetchPosts();
-        setPosts(loadedPosts);
-    };
-
-    const handleRefresh = async () => {
-        setRefreshing(true);
-        await loadPosts();
-        setRefreshing(false);
-    };
-
-    const loadUser = async () => {
-        try {
-            const userData = await AsyncStorage.getItem('user_data');
-            if (userData) {
-                setUser(JSON.parse(userData));
-            }
-        } catch (error) {
-            console.error('Error loading user data:', error);
-        }
-    };
+    const { user } = useAuth();
+    const { posts, refreshing, refreshPosts } = usePosts();
 
     const handleLogoutPress = () => {
         Alert.alert(
@@ -112,34 +85,14 @@ export default function HomeScreen({ onCreatePost, onLogout }) {
         </View>
     );
 
-    const renderPostItem = ({ item }) => (
-        <View style={styles.postCard}>
-            <Text style={styles.postTitle}>{item.title}</Text>
-            <View style={styles.postMeta}>
-                <Text style={styles.postAuthor}>Author: {item.author?.username || 'Unknown'}</Text>
-                <Text style={styles.postDate}>
-                    {new Date(item.createdAt || item.date).toLocaleDateString()}
-                </Text>
-            </View>
-            <Text style={styles.postDescription}>{item.textContent || item.description}</Text>
-        </View>
-    );
-
     return (
         <View style={styles.container}>
-            <FlatList
-                data={posts}
-                renderItem={renderPostItem}
-                keyExtractor={(item) => item.postId || item.id || item.date}
+            <PostList
+                posts={posts}
+                onRefresh={refreshPosts}
+                refreshing={refreshing}
                 ListHeaderComponent={renderHeader}
                 contentContainerStyle={styles.scrollContent}
-                refreshControl={
-                    <RefreshControl
-                        refreshing={refreshing}
-                        onRefresh={handleRefresh}
-                        tintColor={COLORS.primary}
-                    />
-                }
             />
 
             {/* FAB (Floating Action Button) */}
