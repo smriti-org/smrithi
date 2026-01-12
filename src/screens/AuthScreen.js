@@ -9,7 +9,7 @@ import {
     ScrollView,
 } from 'react-native';
 import { COLORS, SPACING, TYPOGRAPHY, SHADOWS } from '../styles/theme';
-import { API_BASE_URL } from '../constants/config';
+import { API_BASE_URL, MIN_USERNAME_LENGTH, MIN_PASSWORD_LENGTH } from '../constants/config';
 import { useAuth } from '../hooks/useAuth';
 import { Input, Button } from '../components';
 
@@ -21,32 +21,51 @@ export default function AuthScreen({ onBackToLanding }) {
     const [confirmPassword, setConfirmPassword] = useState('');
     const [loading, setLoading] = useState(false);
 
+    // Error states for inline validation
+    const [usernameError, setUsernameError] = useState('');
+    const [emailError, setEmailError] = useState('');
+    const [passwordError, setPasswordError] = useState('');
+    const [confirmPasswordError, setConfirmPasswordError] = useState('');
+    const [serverError, setServerError] = useState('');
+
     const validateInputs = () => {
+        // Clear previous errors
+        setUsernameError('');
+        setEmailError('');
+        setPasswordError('');
+        setConfirmPasswordError('');
+        setServerError('');
+
+        let isValid = true;
+
         if (!username.trim()) {
-            Alert.alert('Validation Error', 'Please enter a username');
-            return false;
+            setUsernameError('Please enter a username');
+            isValid = false;
+        } else if (username.trim().length < MIN_USERNAME_LENGTH) {
+            setUsernameError(`Username must be at least ${MIN_USERNAME_LENGTH} characters`);
+            isValid = false;
         }
-        if (username.trim().length < 3) {
-            Alert.alert('Validation Error', 'Username must be at least 3 characters');
-            return false;
+
+        // Basic email validation
+        if (!email.trim() || !email.includes('@')) { // Retaining original email validation logic
+            setEmailError('Please enter a valid email address');
+            isValid = false;
         }
-        if (!email.trim() || !email.includes('@')) {
-            Alert.alert('Validation Error', 'Please enter a valid email address');
-            return false;
-        }
+
         if (!password) {
-            Alert.alert('Validation Error', 'Please enter a password');
-            return false;
+            setPasswordError('Please enter a password');
+            isValid = false;
+        } else if (password.length < MIN_PASSWORD_LENGTH) {
+            setPasswordError(`Password must be at least ${MIN_PASSWORD_LENGTH} characters`);
+            isValid = false;
         }
-        if (password.length < 6) {
-            Alert.alert('Validation Error', 'Password must be at least 6 characters');
-            return false;
-        }
+
         if (password !== confirmPassword) {
-            Alert.alert('Validation Error', 'Passwords do not match');
-            return false;
+            setConfirmPasswordError('Passwords do not match');
+            isValid = false;
         }
-        return true;
+
+        return isValid;
     };
 
     const handleSignUp = async () => {
@@ -71,31 +90,20 @@ export default function AuthScreen({ onBackToLanding }) {
             if (response.ok && data.success) {
                 const { token, ...userData } = data.data;
 
-                // Use AuthContext login method
-                await login(userData, token);
+                // Clear form
+                setUsername('');
+                setEmail('');
+                setPassword('');
+                setConfirmPassword('');
 
-                Alert.alert(
-                    'Success! 🙏',
-                    `Welcome to Smriti, ${username}!\n\n${data.message}`,
-                    [
-                        {
-                            text: 'OK',
-                            onPress: () => {
-                                // Clear form
-                                setUsername('');
-                                setEmail('');
-                                setPassword('');
-                                setConfirmPassword('');
-                            },
-                        },
-                    ]
-                );
+                // Use AuthContext login method - this will auto-redirect to home
+                await login(userData, token);
             } else {
-                Alert.alert('Sign Up Failed', data.error || data.message || 'Something went wrong');
+                setServerError(data.error || data.message || 'Something went wrong');
             }
         } catch (error) {
             console.error('Sign up error:', error);
-            Alert.alert('Error', 'Unable to connect to server. Please check your internet connection.');
+            setServerError('Unable to connect to server. Please check your internet connection.');
         } finally {
             setLoading(false);
         }
@@ -122,11 +130,18 @@ export default function AuthScreen({ onBackToLanding }) {
                 <View style={styles.formContainer}>
                     <Text style={styles.formTitle}>Create Account</Text>
 
+                    {serverError ? (
+                        <View style={styles.serverErrorContainer}>
+                            <Text style={styles.serverErrorText}>{serverError}</Text>
+                        </View>
+                    ) : null}
+
                     <Input
                         label="Username"
                         value={username}
                         onChangeText={setUsername}
                         placeholder="Enter username (min 3 characters)"
+                        error={usernameError}
                     />
 
                     <Input
@@ -135,6 +150,7 @@ export default function AuthScreen({ onBackToLanding }) {
                         onChangeText={setEmail}
                         placeholder="Enter email address"
                         keyboardType="email-address"
+                        error={emailError}
                     />
 
                     <Input
@@ -143,6 +159,7 @@ export default function AuthScreen({ onBackToLanding }) {
                         onChangeText={setPassword}
                         placeholder="Enter password (min 6 characters)"
                         secureTextEntry
+                        error={passwordError}
                     />
 
                     <Input
@@ -151,6 +168,7 @@ export default function AuthScreen({ onBackToLanding }) {
                         onChangeText={setConfirmPassword}
                         placeholder="Re-enter password"
                         secureTextEntry
+                        error={confirmPasswordError}
                     />
 
                     <Button
@@ -258,9 +276,22 @@ const styles = StyleSheet.create({
     },
     note: {
         ...TYPOGRAPHY.caption,
+        color: COLORS.textLight,
         textAlign: 'center',
         marginTop: SPACING.md,
         fontStyle: 'italic',
+    },
+    serverErrorContainer: {
+        backgroundColor: '#fee',
+        padding: SPACING.md,
+        borderRadius: 8,
+        marginBottom: SPACING.md,
+        borderLeftWidth: 4,
+        borderLeftColor: '#f44',
+    },
+    serverErrorText: {
+        color: '#c00',
+        fontSize: 14,
     },
     backButton: {
         marginTop: SPACING.lg,

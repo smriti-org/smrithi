@@ -19,16 +19,28 @@ export default function LoginScreen({ onBackToLanding }) {
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
 
+    // Error states for inline validation
+    const [usernameError, setUsernameError] = useState('');
+    const [passwordError, setPasswordError] = useState('');
+    const [serverError, setServerError] = useState('');
+
     const validateInputs = () => {
+        // Clear previous errors
+        setUsernameError('');
+        setPasswordError('');
+        setServerError('');
+
+        let isValid = true;
+
         if (!username.trim()) {
-            Alert.alert('Validation Error', 'Please enter your username');
-            return false;
+            setUsernameError('Please enter your username');
+            isValid = false;
         }
         if (!password) {
-            Alert.alert('Validation Error', 'Please enter your password');
-            return false;
+            setPasswordError('Please enter your password');
+            isValid = false;
         }
-        return true;
+        return isValid;
     };
 
     const handleLogin = async () => {
@@ -51,19 +63,14 @@ export default function LoginScreen({ onBackToLanding }) {
 
             if (response.ok && data.success) {
                 const { token, ...userData } = data.data;
+                // Use AuthContext login method - this will auto-redirect to home
                 await login(userData, token);
-
-                Alert.alert(
-                    'Welcome Back! 🙏',
-                    `Namaste, ${username}!`,
-                    [{ text: 'OK' }]
-                );
             } else {
-                Alert.alert('Login Failed', data.error || data.message || 'Invalid username or password');
+                setServerError(data.error || data.message || 'Invalid username or password');
             }
         } catch (error) {
             console.error('Login error:', error);
-            Alert.alert('Error', 'Unable to connect to server. Please check your internet connection.');
+            setServerError('Unable to connect to server. Please check your internet connection.');
         } finally {
             setLoading(false);
         }
@@ -87,11 +94,18 @@ export default function LoginScreen({ onBackToLanding }) {
 
                 {/* Login Form */}
                 <View style={styles.formContainer}>
+                    {serverError ? (
+                        <View style={styles.serverErrorContainer}>
+                            <Text style={styles.serverErrorText}>{serverError}</Text>
+                        </View>
+                    ) : null}
+
                     <Input
                         label="Username"
                         value={username}
                         onChangeText={setUsername}
                         placeholder="Enter username"
+                        error={usernameError}
                     />
 
                     <Input
@@ -100,6 +114,7 @@ export default function LoginScreen({ onBackToLanding }) {
                         onChangeText={setPassword}
                         placeholder="Enter password"
                         secureTextEntry
+                        error={passwordError}
                     />
 
                     <Button
@@ -199,5 +214,17 @@ const styles = StyleSheet.create({
         ...TYPOGRAPHY.caption,
         color: COLORS.secondary,
         fontWeight: '500',
+    },
+    serverErrorContainer: {
+        backgroundColor: '#fee',
+        padding: SPACING.md,
+        borderRadius: 8,
+        marginBottom: SPACING.md,
+        borderLeftWidth: 4,
+        borderLeftColor: '#f44',
+    },
+    serverErrorText: {
+        color: '#c00',
+        fontSize: 14,
     },
 });

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, KeyboardAvoidingView, Platform, ScrollView, Alert, ActivityIndicator } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, KeyboardAvoidingView, Platform, ScrollView, Alert, ActivityIndicator, Keyboard } from 'react-native';
 import { COLORS, SPACING, TYPOGRAPHY } from '../styles/theme';
 import { createPost } from '../services/api';
 
@@ -8,27 +8,46 @@ export default function CreatePostScreen({ onSave, onCancel }) {
     const [description, setDescription] = useState('');
     const [loading, setLoading] = useState(false);
 
+    // Error states for inline validation
+    const [titleError, setTitleError] = useState('');
+    const [descriptionError, setDescriptionError] = useState('');
+    const [serverError, setServerError] = useState('');
+
     const handleSave = async () => {
-        if (!title.trim() || !description.trim()) {
-            Alert.alert('Incomplete', 'Please fill in both title and description');
-            return;
+        Keyboard.dismiss();
+        // Clear previous errors
+        setTitleError('');
+        setDescriptionError('');
+        setServerError('');
+
+        // Validate inputs
+        let isValid = true;
+        if (!title.trim()) {
+            setTitleError('Please enter a title');
+            isValid = false;
         }
+        if (!description.trim()) {
+            setDescriptionError('Please write your thoughts');
+            isValid = false;
+        }
+
+        if (!isValid) return;
 
         setLoading(true);
         try {
             const result = await createPost({
                 title: title.trim(),
-                textContent: description.trim()  // description maps to text_content in API
+                textContent: description.trim()
             });
 
             if (result.success) {
-                Alert.alert('Success', 'Your reflection has been saved!');
+                // Auto-redirect to home (no success alert)
                 onSave(result.post);
             } else {
-                Alert.alert('Error', result.error || 'Failed to save post. Please try again.');
+                setServerError(result.error || 'Failed to save post. Please try again.');
             }
         } catch (error) {
-            Alert.alert('Error', 'An unexpected error occurred. Please try again.');
+            setServerError('An unexpected error occurred. Please try again.');
             console.error('Error in handleSave:', error);
         } finally {
             setLoading(false);
@@ -40,13 +59,22 @@ export default function CreatePostScreen({ onSave, onCancel }) {
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
             style={styles.container}
         >
-            <ScrollView contentContainerStyle={styles.scrollContent}>
+            <ScrollView
+                contentContainerStyle={styles.scrollContent}
+                keyboardShouldPersistTaps="handled"
+            >
                 <Text style={styles.headerTitle}>New Reflection</Text>
+
+                {serverError ? (
+                    <View style={styles.serverErrorContainer}>
+                        <Text style={styles.serverErrorText}>{serverError}</Text>
+                    </View>
+                ) : null}
 
                 <View style={styles.inputGroup}>
                     <Text style={styles.label}>Title</Text>
                     <TextInput
-                        style={styles.input}
+                        style={[styles.input, titleError && styles.inputError]}
                         placeholder="What's on your mind?"
                         value={title}
                         onChangeText={setTitle}
@@ -54,12 +82,13 @@ export default function CreatePostScreen({ onSave, onCancel }) {
                         placeholderTextColor={COLORS.textLight}
                         editable={!loading}
                     />
+                    {titleError ? <Text style={styles.errorText}>{titleError}</Text> : null}
                 </View>
 
                 <View style={styles.inputGroup}>
                     <Text style={styles.label}>Description</Text>
                     <TextInput
-                        style={[styles.input, styles.textArea]}
+                        style={[styles.input, styles.textArea, descriptionError && styles.inputError]}
                         placeholder="Write your thoughts..."
                         value={description}
                         onChangeText={setDescription}
@@ -68,6 +97,7 @@ export default function CreatePostScreen({ onSave, onCancel }) {
                         placeholderTextColor={COLORS.textLight}
                         editable={!loading}
                     />
+                    {descriptionError ? <Text style={styles.errorText}>{descriptionError}</Text> : null}
                 </View>
 
                 <View style={styles.buttonRow}>
@@ -164,5 +194,26 @@ const styles = StyleSheet.create({
         ...TYPOGRAPHY.body,
         color: COLORS.background,
         fontWeight: '600',
+    },
+    inputError: {
+        borderColor: '#f44',
+        borderWidth: 2,
+    },
+    errorText: {
+        color: '#c00',
+        fontSize: 12,
+        marginTop: 4,
+    },
+    serverErrorContainer: {
+        backgroundColor: '#fee',
+        padding: SPACING.md,
+        borderRadius: 8,
+        marginBottom: SPACING.md,
+        borderLeftWidth: 4,
+        borderLeftColor: '#f44',
+    },
+    serverErrorText: {
+        color: '#c00',
+        fontSize: 14,
     },
 });
