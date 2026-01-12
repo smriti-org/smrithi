@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, Linking, Alert } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, Linking, Alert, AppState } from 'react-native';
 import { COLORS, SPACING, TYPOGRAPHY, SHADOWS } from '../styles/theme';
 import { useAuth } from '../hooks/useAuth';
 import { usePosts } from '../hooks/usePosts';
@@ -8,6 +8,26 @@ import { PostList } from '../components';
 export default function HomeScreen({ onCreatePost, onLogout }) {
     const { user } = useAuth();
     const { posts, refreshing, refreshPosts } = usePosts();
+    const appState = useRef(AppState.currentState);
+
+    // Auto-refresh when app comes to foreground
+    useEffect(() => {
+        const subscription = AppState.addEventListener('change', nextAppState => {
+            if (
+                appState.current.match(/inactive|background/) &&
+                nextAppState === 'active'
+            ) {
+                console.log('App has come to the foreground! Refreshing posts...');
+                refreshPosts();
+            }
+
+            appState.current = nextAppState;
+        });
+
+        return () => {
+            subscription.remove();
+        };
+    }, [refreshPosts]);
 
     const handleLogoutPress = () => {
         Alert.alert(
@@ -81,7 +101,7 @@ export default function HomeScreen({ onCreatePost, onLogout }) {
                 </View>
             </View>
 
-            {posts.length > 0 && <Text style={[styles.sectionTitle, { paddingHorizontal: SPACING.md }]}>My Reflections</Text>}
+            {posts.length > 0 && <Text style={[styles.sectionTitle, { paddingHorizontal: SPACING.md }]}>Reflections</Text>}
         </View>
     );
 
