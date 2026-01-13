@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, KeyboardAvoidingView, Platform, ScrollView, Alert, ActivityIndicator, Keyboard } from 'react-native';
+import * as Notifications from 'expo-notifications';
 import { COLORS, SPACING, TYPOGRAPHY } from '../styles/theme';
 import { createPost } from '../services/api';
 
@@ -41,6 +42,18 @@ export default function CreatePostScreen({ onSave, onCancel }) {
             });
 
             if (result.success) {
+                // Show success notification
+                await Notifications.scheduleNotificationAsync({
+                    content: {
+                        title: "✨ Reflection added!",
+                        body: `"${title.trim()}" has been saved to your reflections.`,
+                        sound: true,
+                        priority: Notifications.AndroidNotificationPriority.HIGH,
+                        vibrate: [0, 250, 250, 250],
+                    },
+                    trigger: null, // Show immediately
+                });
+
                 // Auto-redirect to home (no success alert)
                 onSave(result.post);
             } else {

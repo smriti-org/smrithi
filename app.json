@@ -30,6 +30,21 @@
       "eas": {
         "projectId": "bcd2f061-f216-4506-b5b8-14d909f1a7a1"
       }
-    }
+    },
+    "notification": {
+      "icon": "./assets/icon.png",
+      "color": "#8B7355",
+      "androidMode": "default",
+      "androidCollapsedTitle": "Smriti"
+    },
+    "plugins": [
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/icon.png",
+          "color": "#8B7355"
+        }
+      ]
+    ]
   }
 }
