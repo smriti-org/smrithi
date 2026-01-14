@@ -1,12 +1,10 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, Linking, Alert, AppState } from 'react-native';
+import React, { useEffect, useRef } from 'react';
+import { View, Text, StyleSheet, Image, TouchableOpacity, Linking, AppState } from 'react-native';
 import { COLORS, SPACING, TYPOGRAPHY, SHADOWS } from '../styles/theme';
-import { useAuth } from '../hooks/useAuth';
 import { usePosts } from '../hooks/usePosts';
 import { PostList } from '../components';
 
-export default function HomeScreen({ onCreatePost, onLogout }) {
-    const { user } = useAuth();
+export default function HomeScreen({ onCreatePost }) {
     const { posts, refreshing, refreshPosts } = usePosts();
     const appState = useRef(AppState.currentState);
 
@@ -28,17 +26,6 @@ export default function HomeScreen({ onCreatePost, onLogout }) {
             subscription.remove();
         };
     }, [refreshPosts]);
-
-    const handleLogoutPress = () => {
-        Alert.alert(
-            'Logout',
-            'Are you sure you want to logout?',
-            [
-                { text: 'Cancel', style: 'cancel' },
-                { text: 'Logout', onPress: onLogout, style: 'destructive' }
-            ]
-        );
-    };
 
     // Static data for the featured card
     const cardData = {
@@ -65,22 +52,6 @@ export default function HomeScreen({ onCreatePost, onLogout }) {
                     <View>
                         <Text style={styles.headerTitle}>Hari Om</Text>
                         <Text style={styles.headerSubtitle}>Daily Reflections</Text>
-                    </View>
-
-                    <View style={styles.headerActions}>
-                        {user && (
-                            <View style={styles.userInfo}>
-                                <View style={styles.userIcon}>
-                                    <Text style={styles.userInitial}>
-                                        {user.username.charAt(0).toUpperCase()}
-                                    </Text>
-                                </View>
-                                <Text style={styles.usernameText}>{user.username}</Text>
-                            </View>
-                        )}
-                        <TouchableOpacity style={styles.logoutButton} onPress={handleLogoutPress}>
-                            <Text style={styles.logoutText}>Logout</Text>
-                        </TouchableOpacity>
                     </View>
                 </View>
             </View>

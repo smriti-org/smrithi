@@ -104,3 +104,123 @@ export const fetchPosts = async (skip = 0, limit = 20) => {
         return [];
     }
 };
+
+/**
+ * Fetch current user's profile with stats
+ * @returns {Promise<Object>} - {success, data: {user: {...}}}
+ */
+export const fetchUserProfile = async () => {
+    try {
+        const token = await getAuthToken();
+        if (!token) {
+            return { success: false, error: 'No authentication token found' };
+        }
+
+        const response = await fetch(`${API_BASE_URL}/users/me`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        const data = await response.json();
+        console.log('Fetched user profile:', data);
+
+        if (!response.ok) {
+            return {
+                success: false,
+                error: data.error || `Server error: ${response.status}`
+            };
+        }
+
+        return data;
+    } catch (error) {
+        console.error('Error fetching user profile:', error);
+        return {
+            success: false,
+            error: error.message || 'Network error occurred'
+        };
+    }
+};
+
+/**
+ * Fetch user's own posts
+ * @param {number} skip - Number of posts to skip (for pagination)
+ * @param {number} limit - Maximum number of posts to fetch
+ * @returns {Promise<Object>} - {success, results, data: {posts: [...]}}
+ */
+export const fetchMyPosts = async (skip = 0, limit = 20) => {
+    try {
+        const token = await getAuthToken();
+        if (!token) {
+            return { success: false, error: 'No authentication token found' };
+        }
+
+        const response = await fetch(
+            `${API_BASE_URL}/posts/me?skip=${skip}&limit=${limit}`,
+            {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            }
+        );
+
+        const data = await response.json();
+        console.log('Fetched my posts:', data);
+
+        if (!response.ok) {
+            return {
+                success: false,
+                error: data.error || `Server error: ${response.status}`
+            };
+        }
+
+        return data;
+    } catch (error) {
+        console.error('Error fetching my posts:', error);
+        return {
+            success: false,
+            error: error.message || 'Network error occurred'
+        };
+    }
+};
+
+/**
+ * Delete a post (ownership validated by backend)
+ * @param {string} postId - Post ID to delete
+ * @returns {Promise<Object>} - {success, message}
+ */
+export const deletePost = async (postId) => {
+    try {
+        const token = await getAuthToken();
+        if (!token) {
+            return { success: false, error: 'No authentication token found' };
+        }
+
+        const response = await fetch(`${API_BASE_URL}/posts/${postId}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        const data = await response.json();
+        console.log('Delete post response:', data);
+
+        if (!response.ok) {
+            return {
+                success: false,
+                error: data.error || `Server error: ${response.status}`
+            };
+        }
+
+        return data;
+    } catch (error) {
+        console.error('Error deleting post:', error);
+        return {
+            success: false,
+            error: error.message || 'Network error occurred'
+        };
+    }
+};
