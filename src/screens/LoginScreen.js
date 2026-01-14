@@ -2,33 +2,45 @@ import React, { useState } from 'react';
 import {
     View,
     Text,
-    TextInput,
-    TouchableOpacity,
     StyleSheet,
     Alert,
     KeyboardAvoidingView,
     Platform,
     ScrollView,
-    ActivityIndicator,
 } from 'react-native';
 import { COLORS, SPACING, TYPOGRAPHY, SHADOWS } from '../styles/theme';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { API_BASE_URL } from '../constants/config';
+import { useAuth } from '../hooks/useAuth';
+import { Input, Button } from '../components';
 
-export default function LoginScreen({ onLogin, onBackToLanding }) {
+export default function LoginScreen({ onBackToLanding }) {
+    const { login } = useAuth();
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
 
+    // Error states for inline validation
+    const [usernameError, setUsernameError] = useState('');
+    const [passwordError, setPasswordError] = useState('');
+    const [serverError, setServerError] = useState('');
+
     const validateInputs = () => {
+        // Clear previous errors
+        setUsernameError('');
+        setPasswordError('');
+        setServerError('');
+
+        let isValid = true;
+
         if (!username.trim()) {
-            Alert.alert('Validation Error', 'Please enter your username');
-            return false;
+            setUsernameError('Please enter your username');
+            isValid = false;
         }
         if (!password) {
-            Alert.alert('Validation Error', 'Please enter your password');
-            return false;
+            setPasswordError('Please enter your password');
+            isValid = false;
         }
-        return true;
+        return isValid;
     };
 
     const handleLogin = async () => {
@@ -36,8 +48,8 @@ export default function LoginScreen({ onLogin, onBackToLanding }) {
 
         setLoading(true);
         try {
-            const response = await fetch('https://smriti-backend-r293.onrender.com/api/auth/login', {
-                method: 'POST', // Usually login is POST. If it fails, we can check if they really meant GET.
+            const response = await fetch(`${API_BASE_URL}/auth/login`, {
+                method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
@@ -50,29 +62,15 @@ export default function LoginScreen({ onLogin, onBackToLanding }) {
             const data = await response.json();
 
             if (response.ok && data.success) {
-                // Save token and user data
                 const { token, ...userData } = data.data;
-                await AsyncStorage.setItem('user_token', token);
-                await AsyncStorage.setItem('user_data', JSON.stringify(userData));
-
-                Alert.alert(
-                    'Welcome Back! 🙏',
-                    `Namaste, ${username}!`,
-                    [
-                        {
-                            text: 'OK',
-                            onPress: () => {
-                                onLogin();
-                            },
-                        },
-                    ]
-                );
+                // Use AuthContext login method - this will auto-redirect to home
+                await login(userData, token);
             } else {
-                Alert.alert('Login Failed', data.error || data.message || 'Invalid username or password');
+                setServerError(data.error || data.message || 'Invalid username or password');
             }
         } catch (error) {
             console.error('Login error:', error);
-            Alert.alert('Error', 'Unable to connect to server. Please check your internet connection.');
+            setServerError('Unable to connect to server. Please check your internet connection.');
         } finally {
             setLoading(false);
         }
@@ -96,53 +94,43 @@ export default function LoginScreen({ onLogin, onBackToLanding }) {
 
                 {/* Login Form */}
                 <View style={styles.formContainer}>
-                    <View style={styles.inputGroup}>
-                        <Text style={styles.label}>Username</Text>
-                        <TextInput
-                            style={styles.input}
-                            placeholder="Enter username"
-                            placeholderTextColor={COLORS.textLight}
-                            value={username}
-                            onChangeText={setUsername}
-                            autoCapitalize="none"
-                            autoCorrect={false}
-                            editable={!loading}
-                        />
-                    </View>
+                    {serverError ? (
+                        <View style={styles.serverErrorContainer}>
+                            <Text style={styles.serverErrorText}>{serverError}</Text>
+                        </View>
+                    ) : null}
 
-                    <View style={styles.inputGroup}>
-                        <Text style={styles.label}>Password</Text>
-                        <TextInput
-                            style={styles.input}
-                            placeholder="Enter password"
-                            placeholderTextColor={COLORS.textLight}
-                            value={password}
-                            onChangeText={setPassword}
-                            secureTextEntry
-                            autoCapitalize="none"
-                            editable={!loading}
-                        />
-                    </View>
+                    <Input
+                        label="Username"
+                        value={username}
+                        onChangeText={setUsername}
+                        placeholder="Enter username"
+                        error={usernameError}
+                    />
 
-                    <TouchableOpacity
-                        style={[styles.button, loading && styles.buttonDisabled]}
+                    <Input
+                        label="Password"
+                        value={password}
+                        onChangeText={setPassword}
+                        placeholder="Enter password"
+                        secureTextEntry
+                        error={passwordError}
+                    />
+
+                    <Button
+                        title="Login"
                         onPress={handleLogin}
-                        disabled={loading}
-                    >
-                        {loading ? (
-                            <ActivityIndicator color={COLORS.background} />
-                        ) : (
-                            <Text style={styles.buttonText}>Login</Text>
-                        )}
-                    </TouchableOpacity>
+                        loading={loading}
+                        style={{ marginTop: SPACING.md }}
+                    />
 
-                    <TouchableOpacity
-                        style={styles.backButton}
+                    <Button
+                        title="← Back to Landing"
                         onPress={onBackToLanding}
+                        variant="outline"
                         disabled={loading}
-                    >
-                        <Text style={styles.backButtonText}>← Back to Landing</Text>
-                    </TouchableOpacity>
+                        style={{ marginTop: SPACING.lg }}
+                    />
                 </View>
             </ScrollView>
         </KeyboardAvoidingView>
@@ -226,5 +214,17 @@ const styles = StyleSheet.create({
         ...TYPOGRAPHY.caption,
         color: COLORS.secondary,
         fontWeight: '500',
+    },
+    serverErrorContainer: {
+        backgroundColor: '#fee',
+        padding: SPACING.md,
+        borderRadius: 8,
+        marginBottom: SPACING.md,
+        borderLeftWidth: 4,
+        borderLeftColor: '#f44',
+    },
+    serverErrorText: {
+        color: '#c00',
+        fontSize: 14,
     },
 });

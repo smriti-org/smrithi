@@ -1,6 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { STORAGE_KEY_PREFIX } from '../constants/config';
 
-const STORAGE_KEY = '@smriti';
+const STORAGE_KEY = STORAGE_KEY_PREFIX;
 
 /**
  * Get all users from AsyncStorage

@@ -1,6 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
-const API_BASE_URL = 'https://smriti-backend-r293.onrender.com/api';
+import { API_BASE_URL, STORAGE_KEY_USER_TOKEN } from '../constants/config';
 
 /**
  * Get the auth token from AsyncStorage
@@ -8,7 +7,7 @@ const API_BASE_URL = 'https://smriti-backend-r293.onrender.com/api';
  */
 export const getAuthToken = async () => {
     try {
-        const token = await AsyncStorage.getItem('user_token');
+        const token = await AsyncStorage.getItem(STORAGE_KEY_USER_TOKEN);
         return token;
     } catch (error) {
         console.error('Error getting auth token:', error);
