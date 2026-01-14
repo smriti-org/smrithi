@@ -55,8 +55,6 @@ jobs:
       - name: Get update info
         id: update-info
         run: |
-          EXPO_PROJECT=$(eas whoami --json | jq -r '.username')
-          
           echo "### 🚀 OTA Update Published!" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Channel:** \`${{ github.event.inputs.channel }}\`" >> $GITHUB_STEP_SUMMARY
@@ -69,4 +67,4 @@ jobs:
           echo "- **No APK download** required" >> $GITHUB_STEP_SUMMARY
           echo "- Update typically downloads in **seconds**" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "[View in Expo Dashboard](https://expo.dev/accounts/$EXPO_PROJECT/projects/SmritiApp/updates)" >> $GITHUB_STEP_SUMMARY
+          echo "[View in Expo Dashboard](https://expo.dev)" >> $GITHUB_STEP_SUMMARY
