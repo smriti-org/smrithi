@@ -59,26 +59,15 @@ jobs:
       - name: Get build info
         id: build-info
         run: |
-          # Get the latest build information
-          BUILD_INFO=$(eas build:list --platform android --limit 1 --json --non-interactive)
-          BUILD_URL=$(echo $BUILD_INFO | jq -r '.[0].artifacts.buildUrl // "Pending..."')
-          BUILD_ID=$(echo $BUILD_INFO | jq -r '.[0].id // "N/A"')
-          EXPO_PROJECT=$(eas whoami --json | jq -r '.username')
-          
-          echo "build_url=$BUILD_URL" >> $GITHUB_OUTPUT
-          echo "build_id=$BUILD_ID" >> $GITHUB_OUTPUT
-          echo "expo_project=$EXPO_PROJECT" >> $GITHUB_OUTPUT
-          
           # Create a nice summary
           echo "### 🎉 APK Build Started!" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Branch:** \`${{ github.event.inputs.branch }}\`" >> $GITHUB_STEP_SUMMARY
           echo "**Profile:** \`${{ github.event.inputs.profile }}\`" >> $GITHUB_STEP_SUMMARY
-          echo "**Build ID:** \`$BUILD_ID\`" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "#### 📦 Download APK" >> $GITHUB_STEP_SUMMARY
-          echo "Once the build completes, download from:" >> $GITHUB_STEP_SUMMARY
-          echo "- **Direct Download:** $BUILD_URL" >> $GITHUB_STEP_SUMMARY
-          echo "- **Expo Dashboard:** [View Build](https://expo.dev/accounts/$EXPO_PROJECT/projects/SmritiApp/builds/$BUILD_ID)" >> $GITHUB_STEP_SUMMARY
+          echo "Once the build completes (~15 minutes), download from:" >> $GITHUB_STEP_SUMMARY
+          echo "- Visit the [Expo Dashboard](https://expo.dev) and check your latest build" >> $GITHUB_STEP_SUMMARY
+          echo "- Or scan the QR code shown in the build logs above" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "> 💡 **Tip:** Share the download link with your users directly!" >> $GITHUB_STEP_SUMMARY
