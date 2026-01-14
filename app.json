@@ -39,6 +39,7 @@
       "url": "https://u.expo.dev/bcd2f061-f216-4506-b5b8-14d909f1a7a1",
       "checkAutomatically": "ON_LOAD",
       "fallbackToCacheTimeout": 0
-    }
+    },
+    "owner": "vinayykkumar"
   }
 }
