@@ -1,11 +1,12 @@
 import { StatusBar } from 'expo-status-bar';
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
-import HomeScreen from './src/screens/HomeScreen';
+import { NavigationContainer } from '@react-navigation/native';
 import CreatePostScreen from './src/screens/CreatePostScreen';
 import AuthScreen from './src/screens/AuthScreen';
 import LandingScreen from './src/screens/LandingScreen';
 import LoginScreen from './src/screens/LoginScreen';
+import AppNavigator from './src/navigation/AppNavigator';
 import { COLORS } from './src/styles/theme';
 import { AuthProvider } from './src/contexts/AuthContext';
 import { useAuth } from './src/hooks/useAuth';
@@ -13,28 +14,32 @@ import { useAuth } from './src/hooks/useAuth';
 // Main App Content (uses auth context)
 function AppContent() {
   const { isAuthenticated, isLoading, logout } = useAuth();
-  const [currentScreen, setCurrentScreen] = React.useState('HOME'); // 'HOME' or 'CREATE_POST'
+  const [currentScreen, setCurrentScreen] = React.useState('MAIN'); // 'MAIN' or 'CREATE_POST'
   const [authMode, setAuthMode] = React.useState('LANDING'); // 'LANDING', 'SIGN_UP', 'LOGIN'
 
   const handleLogout = async () => {
     await logout();
     setAuthMode('LANDING');
-    setCurrentScreen('HOME');
+    setCurrentScreen('MAIN');
   };
 
   const renderScreen = () => {
-    if (currentScreen === 'HOME') {
-      return <HomeScreen
-        onCreatePost={() => setCurrentScreen('CREATE_POST')}
-        onLogout={handleLogout}
-      />;
+    if (currentScreen === 'MAIN') {
+      return (
+        <NavigationContainer>
+          <AppNavigator
+            onCreatePost={() => setCurrentScreen('CREATE_POST')}
+            onLogout={handleLogout}
+          />
+        </NavigationContainer>
+      );
     }
     if (currentScreen === 'CREATE_POST') {
       return (
         <CreatePostScreen
-          onCancel={() => setCurrentScreen('HOME')}
+          onCancel={() => setCurrentScreen('MAIN')}
           onSave={(post) => {
-            setCurrentScreen('HOME');
+            setCurrentScreen('MAIN');
           }}
         />
       );
