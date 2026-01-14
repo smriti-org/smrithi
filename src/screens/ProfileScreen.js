@@ -116,7 +116,7 @@ export default function ProfileScreen({ onLogout }) {
 
                 {/* Username & Tagline */}
                 <Text style={styles.username}>@{user.username}</Text>
-                <Text style={styles.tagline}>OTA Update Test ✨</Text>
+                <Text style={styles.tagline}>Remember gently.</Text>
 
                 {/* Meta Row: Reflections . 1 | Since . Jan 2026 */}
                 <View style={styles.metaRow}>
