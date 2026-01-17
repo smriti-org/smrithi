@@ -1,16 +1,17 @@
 export const COLORS = {
-  // Spiritual, calming palette
-  background: '#FFF9F5',      // Warm cream
-  card: '#FFFFFF',
-  primary: '#8B7355',         // Earth brown
-  secondary: '#A0937D',       // Soft taupe
-  accent: '#6B8E23',          // Olive green
-  text: '#2C2C2C',
-  textLight: '#6B6B6B',
-  border: '#E8E0D5',
+  // Spiritual, calming palette (Warm Paper Aesthetic)
+  background: '#EBE0D5',      // Warm Beige / Paper
+  card: '#F5EEE6',            // Lighter Beige
+  primary: '#4E342E',         // Dark Brown
+  secondary: '#795548',       // Medium Brown
+  accent: '#8D6E63',          // Avatar Brown
+  text: '#4E342E',            // Dark Brown
+  textLight: '#795548',       // Medium Brown
+  border: '#D7CCC8',
+  white: '#FFFFFF',
   success: '#6B8E23',
   error: '#C14A39',
-  shadow: 'rgba(139, 115, 85, 0.15)',
+  shadow: 'rgba(78, 52, 46, 0.1)',
 };
 
 // Profile Specific Theme (Warm/Beige)

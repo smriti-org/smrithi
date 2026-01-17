@@ -1,5 +1,16 @@
-import React, { useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity, Linking, AppState } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import {
+    View,
+    Text,
+    StyleSheet,
+    Image,
+    TouchableOpacity,
+    Linking,
+    AppState,
+    Platform,
+    ImageBackground
+} from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { COLORS, SPACING, TYPOGRAPHY, SHADOWS } from '../styles/theme';
 import { usePosts } from '../hooks/usePosts';
 import { PostList } from '../components';
@@ -30,9 +41,9 @@ export default function HomeScreen({ onCreatePost }) {
     // Static data for the featured card
     const cardData = {
         title: '🌱 Why Smriti exists?',
-        description: 'Smriti is a quiet digital space to pause, reflect, and remember. There are no likes, comments, or noise here.Only sincere learnings, gentle reminders, and shared reflections.',
+        description: 'Smriti is a quiet digital space to pause, reflect, and remember. There are no likes, comments, or noise here.\n\nOnly sincere learnings, gentle reminders, and shared reflections.',
         imageUri: require('../../assets/daily_inspiration.png'),
-
+        author: 'Reflections',
         links: []
     };
 
@@ -45,44 +56,80 @@ export default function HomeScreen({ onCreatePost }) {
         }
     };
 
-    const renderHeader = () => (
+    const renderScrollableHeader = () => (
         <View>
-            <View style={styles.header}>
-                <View style={styles.headerTopRow}>
-                    <View>
-                        <Text style={styles.headerTitle}>Hari Om</Text>
-                        <Text style={styles.headerSubtitle}>Daily Reflections</Text>
-                    </View>
-                </View>
-            </View>
-
             <View style={styles.sectionContainer}>
-                <View style={styles.card}>
-                    <Image
-                        source={cardData.imageUri}
-                        style={styles.cardImage}
-                        resizeMode="cover"
-                    />
+                <ImageBackground
+                    source={require('../../assets/bg_card.png')}
+                    style={styles.card}
+                    resizeMode="cover"
+                    imageStyle={{ borderRadius: 20 }}
+                >
+                    <View style={styles.cardImageContainer}>
+                        <Image
+                            source={cardData.imageUri}
+                            style={styles.cardImage}
+                            resizeMode="cover"
+                        />
+                        <View style={styles.cardOverlay} />
+                    </View>
 
                     <View style={styles.cardContent}>
                         <Text style={styles.cardTitle}>{cardData.title}</Text>
+
+                        {cardData.author && (
+                            <View style={styles.authorContainer}>
+                                <Text style={styles.authorText}>{cardData.author}</Text>
+                            </View>
+                        )}
+
                         <Text style={styles.cardText}>{cardData.description}</Text>
-                        <Text style={styles.authorText}>{cardData.author}</Text>
                     </View>
-                </View>
+                </ImageBackground>
             </View>
 
-            {posts.length > 0 && <Text style={[styles.sectionTitle, { paddingHorizontal: SPACING.md }]}>Reflections</Text>}
+            {posts.length > 0 && (
+                <View style={styles.feedHeader}>
+                    <Text style={styles.sectionTitle}>Reflections</Text>
+                    <View style={styles.sectionDivider} />
+                </View>
+            )}
         </View>
     );
 
     return (
-        <View style={styles.container}>
+        <ImageBackground
+            source={require('../../assets/bg_home_page.png')}
+            style={styles.container}
+            resizeMode="cover"
+        >
+            {/* Fixed Header */}
+            <ImageBackground
+                source={require('../../assets/bg_home_page.png')}
+                style={styles.fixedHeader}
+                resizeMode="cover"
+                imageStyle={{ borderBottomLeftRadius: 24, borderBottomRightRadius: 24 }}
+            >
+                {/* Overlay to modify background tone */}
+                <View style={[StyleSheet.absoluteFill, {
+                    backgroundColor: 'rgba(141, 110, 99, 0.1)', // Light brown tint 
+                    borderBottomLeftRadius: 24,
+                    borderBottomRightRadius: 24,
+                }]} />
+
+                <View style={styles.headerTopRow}>
+                    <View style={styles.headerTextContainer}>
+                        <Text style={styles.headerTitle}>Hari Om</Text>
+                        <Text style={styles.headerSubtitle}>Daily Reflections</Text>
+                    </View>
+                </View>
+            </ImageBackground>
+
             <PostList
                 posts={posts}
                 onRefresh={refreshPosts}
                 refreshing={refreshing}
-                ListHeaderComponent={renderHeader}
+                ListHeaderComponent={renderScrollableHeader}
                 contentContainerStyle={styles.scrollContent}
             />
 
@@ -90,206 +137,169 @@ export default function HomeScreen({ onCreatePost }) {
             <TouchableOpacity style={styles.fab} onPress={onCreatePost}>
                 <Text style={styles.fabText}>+</Text>
             </TouchableOpacity>
-        </View>
+        </ImageBackground>
     );
 }
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: COLORS.background,
-        paddingTop: 50,
+        // backgroundColor: COLORS.background, // Handled by ImageBackground
+        // paddingTop: 50, // Removed, handled by Fixed Header padding
     },
-    header: {
+    fixedHeader: {
+        paddingTop: Platform.OS === 'ios' ? 60 : 40, // Handle status bar here since it's an ImageBackground now
         paddingHorizontal: SPACING.lg,
-        paddingBottom: SPACING.md,
-        borderBottomWidth: 1,
-        borderBottomColor: COLORS.border,
+        paddingBottom: SPACING.lg,
+        zIndex: 10,
+        ...SHADOWS.medium, // Add shadow for depth
+        shadowColor: COLORS.shadow,
+        shadowOpacity: 0.15,
     },
     headerTopRow: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
     },
+    headerTextContainer: {
+        flex: 1,
+    },
+    headerIconContainer: {
+        width: 44,
+        height: 44,
+        borderRadius: 22,
+        backgroundColor: 'rgba(255,255,255,0.3)', // Subtle highlight behind icon
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
     headerTitle: {
         ...TYPOGRAPHY.title,
         color: COLORS.primary,
-        fontSize: 28,
+        fontSize: 32,
+        fontWeight: '700',
+        letterSpacing: -0.5,
+        fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
     },
     headerSubtitle: {
         ...TYPOGRAPHY.body,
         color: COLORS.secondary,
-        fontSize: 14,
-    },
-    headerActions: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: SPACING.sm,
-    },
-    logoutButton: {
-        padding: 6,
-    },
-    logoutText: {
-        ...TYPOGRAPHY.caption,
-        color: '#ff4444', // Red for logout
-        fontWeight: '600',
-    },
-    userInfo: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: COLORS.card,
-        padding: 6,
-        paddingHorizontal: 10,
-        borderRadius: 20,
-        ...SHADOWS.small,
-    },
-    userIcon: {
-        width: 28,
-        height: 28,
-        borderRadius: 14,
-        backgroundColor: COLORS.primary,
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginRight: 8,
-    },
-    userInitial: {
-        color: COLORS.background,
-        fontSize: 14,
-        fontWeight: 'bold',
-    },
-    usernameText: {
-        ...TYPOGRAPHY.caption,
-        color: COLORS.text,
-        fontWeight: '600',
+        fontSize: 16,
+        marginTop: -4,
+        letterSpacing: 0.5,
+        fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
+        fontStyle: 'italic',
     },
     scrollContent: {
         paddingBottom: 80, // Space for FAB
     },
     sectionContainer: {
-        padding: SPACING.md,
+        paddingHorizontal: SPACING.md,
+        paddingBottom: SPACING.lg,
+    },
+    feedHeader: {
+        paddingHorizontal: SPACING.lg,
+        marginBottom: SPACING.sm,
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: SPACING.md,
     },
     sectionTitle: {
         ...TYPOGRAPHY.heading,
         color: COLORS.secondary,
-        marginBottom: SPACING.sm,
-        fontSize: 18,
+        fontSize: 20,
+        fontWeight: '600',
+        fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
+    },
+    sectionDivider: {
+        flex: 1,
+        height: 1,
+        backgroundColor: COLORS.border,
+        opacity: 0.5,
     },
     card: {
         backgroundColor: COLORS.card,
-        borderRadius: 12,
+        borderRadius: 20,
         ...SHADOWS.medium,
+        shadowColor: COLORS.shadow,
+        shadowOpacity: 0.1,
         overflow: 'hidden',
-        marginBottom: SPACING.lg,
+        borderWidth: 1.5,
+        borderColor: 'rgba(78, 52, 46, 0.2)', // Increased visibility
+    },
+    cardImageContainer: {
+        position: 'relative',
+        height: 220,
     },
     cardImage: {
         width: '100%',
-        height: 200,
+        height: '100%',
         backgroundColor: COLORS.border,
     },
+    cardOverlay: {
+        ...StyleSheet.absoluteFillObject,
+        backgroundColor: 'rgba(0,0,0,0.02)', // Subtle tint
+    },
     cardContent: {
-        padding: SPACING.md,
+        padding: SPACING.lg,
+        paddingTop: SPACING.md, // Reduced slightly
+        alignItems: 'center', // Center everything in content
     },
     cardTitle: {
         ...TYPOGRAPHY.heading,
-        fontSize: 20,
+        fontSize: 24,
         marginBottom: SPACING.xs,
-        color: COLORS.text,
+        color: COLORS.primary,
+        fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
+        fontWeight: '700',
+        textAlign: 'center',
     },
     cardText: {
         ...TYPOGRAPHY.body,
         color: COLORS.text,
-        lineHeight: 22,
+        lineHeight: 28, // Increased for center alignment readability
+        fontSize: 16,
+        opacity: 0.9,
+        marginBottom: SPACING.lg,
+        fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
+        textAlign: 'center',
+    },
+    authorContainer: {
         marginBottom: SPACING.md,
+        paddingHorizontal: SPACING.md,
+        paddingVertical: 6,
+        borderWidth: 1,
+        borderColor: COLORS.secondary,
+        borderRadius: 20,
+        // backgroundColor: 'rgba(255,255,255,0.5)', // Optional subtle background for pill
     },
     authorText: {
         ...TYPOGRAPHY.caption,
         fontStyle: 'italic',
-        marginTop: -SPACING.sm,
-        marginBottom: SPACING.md,
-        color: COLORS.primary,
-    },
-    linksContainer: {
-        marginTop: SPACING.xs,
-        paddingTop: SPACING.sm,
-        borderTopWidth: 1,
-        borderTopColor: COLORS.border,
-    },
-    linksHeader: {
-        ...TYPOGRAPHY.caption,
-        fontWeight: '600',
-        marginBottom: SPACING.sm,
         color: COLORS.secondary,
-    },
-    linkButtonsRow: {
-        flexDirection: 'row',
-        flexWrap: 'wrap',
-        gap: SPACING.sm,
-    },
-    linkButton: {
-        backgroundColor: COLORS.secondary,
-        paddingVertical: SPACING.xs,
-        paddingHorizontal: SPACING.sm,
-        borderRadius: 16,
-        flexDirection: 'row',
-        alignItems: 'center',
-    },
-    linkButtonText: {
-        ...TYPOGRAPHY.caption,
-        color: COLORS.background,
+        fontSize: 14,
+        fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
         fontWeight: '600',
     },
     // New Styles for Posts and FAB
-    postCard: {
-        backgroundColor: COLORS.card,
-        padding: SPACING.md,
-        marginHorizontal: SPACING.md,
-        marginBottom: SPACING.md,
-        borderRadius: 12,
-        ...SHADOWS.small,
-        borderLeftWidth: 4,
-        borderLeftColor: COLORS.primary,
-    },
-    postTitle: {
-        ...TYPOGRAPHY.heading,
-        fontSize: 18,
-        color: COLORS.text,
-        marginBottom: 4,
-    },
-    postMeta: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: 8,
-    },
-    postAuthor: {
-        ...TYPOGRAPHY.caption,
-        color: COLORS.primary,
-        fontWeight: '600',
-    },
-    postDate: {
-        ...TYPOGRAPHY.caption,
-        color: COLORS.textLight,
-    },
-    postDescription: {
-        ...TYPOGRAPHY.body,
-        fontSize: 14,
-        color: COLORS.text,
-    },
     fab: {
         position: 'absolute',
-        bottom: 24,
-        right: 24,
-        width: 56,
-        height: 56,
-        borderRadius: 28,
-        backgroundColor: COLORS.primary,
+        bottom: 50, // Increased to clear home indicator safely
+        right: 30,
+        width: 60,
+        height: 60,
+        borderRadius: 30,
+        backgroundColor: COLORS.accent, // Use accent from profile theme
         justifyContent: 'center',
         alignItems: 'center',
         ...SHADOWS.medium,
+        shadowColor: COLORS.shadow,
+        shadowOpacity: 0.4,
+        elevation: 10,
+        zIndex: 100, // Ensure it's on top
     },
     fabText: {
-        fontSize: 32,
-        color: COLORS.background,
-        paddingBottom: 4, // Visual alignment
+        fontSize: 34,
+        color: COLORS.white,
+        marginTop: -4,
     },
 });

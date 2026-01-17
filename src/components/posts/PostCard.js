@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity, Linking } from 'react-native';
+import { View, Text, StyleSheet, Image, TouchableOpacity, Linking, Platform } from 'react-native';
 import { COLORS, SPACING, TYPOGRAPHY, SHADOWS } from '../../styles/theme';
 
 /**
@@ -17,7 +17,7 @@ export default function PostCard({ post }) {
     const content = post.textContent || post.text_content || post.description;
 
     // Dynamic Image Sizing
-    const [aspectRatio, setAspectRatio] = React.useState(4 / 3); // Default aspect ratio
+    const [aspectRatio, setAspectRatio] = React.useState(4 / 3);
 
     React.useEffect(() => {
         if (imageUrl) {
@@ -81,13 +81,15 @@ export default function PostCard({ post }) {
 const styles = StyleSheet.create({
     postCard: {
         backgroundColor: COLORS.card,
+        padding: SPACING.lg,
         marginHorizontal: SPACING.md,
         marginBottom: SPACING.md,
-        borderRadius: 12,
-        ...SHADOWS.small,
-        borderLeftWidth: 4,
-        borderLeftColor: COLORS.primary,
-        overflow: 'hidden', // Ensure image respects border radius
+        borderRadius: 20,
+        ...SHADOWS.medium,
+        shadowColor: COLORS.shadow,
+        shadowOpacity: 0.1,
+        borderWidth: 1.5,
+        borderColor: 'rgba(78, 52, 46, 0.2)',
     },
     postImage: {
         width: '100%',
@@ -95,33 +97,40 @@ const styles = StyleSheet.create({
         marginTop: SPACING.md,
     },
     postContent: {
-        padding: SPACING.md,
+        // No padding needed, handled by postCard
     },
     postTitle: {
         ...TYPOGRAPHY.heading,
-        fontSize: 18,
-        color: COLORS.text,
+        fontSize: 20,
+        color: COLORS.primary,
         marginBottom: 4,
+        fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
+        fontWeight: '700',
     },
     postMeta: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        marginBottom: 8,
+        marginBottom: SPACING.sm,
     },
     postAuthor: {
         ...TYPOGRAPHY.caption,
-        color: COLORS.primary,
-        fontWeight: '600',
+        color: COLORS.secondary,
+        fontStyle: 'italic',
+        fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
     },
     postDate: {
         ...TYPOGRAPHY.caption,
         color: COLORS.textLight,
+        fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
+        opacity: 0.7,
     },
     postDescription: {
         ...TYPOGRAPHY.body,
-        fontSize: 14,
+        fontSize: 16,
         color: COLORS.text,
+        lineHeight: 24,
+        fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
     },
     documentContainer: {
         flexDirection: 'row',
