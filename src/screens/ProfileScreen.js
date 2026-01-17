@@ -132,7 +132,7 @@ export default function ProfileScreen({ onLogout }) {
 
     return (
         <ImageBackground
-            source={require('../../assets/bg-profile-page.png')}
+            source={require('../../assets/bg-profile-page.jpg')}
             style={styles.container}
             resizeMode="cover"
         >
