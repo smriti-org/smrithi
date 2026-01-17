@@ -17,8 +17,8 @@
             },
             "autoIncrement": true,
             "env": {
-                "GRADLE_OPTS": "-Xmx4096m -XX:MaxMetaspaceSize=512m",
-                "JAVA_OPTS": "-Xmx4096m"
+                "JAVA_OPTS": "-XX:MaxMetaspaceSize=1g -Xmx4g",
+                "GRADLE_OPTS": "-Dorg.gradle.jvmargs=-Xmx4g -XX:MaxMetaspaceSize=1g"
             }
         },
         "production": {
