@@ -49,9 +49,6 @@ jobs:
         run: npm ci
 
       - name: Build APK
-        env:
-          GRADLE_OPTS: "-Xmx4096m -XX:MaxMetaspaceSize=512m"
-          JAVA_OPTS: "-Xmx4096m"
         run: |
           if [ -n "${{ github.event.inputs.message }}" ]; then
             eas build --platform android --profile ${{ github.event.inputs.profile }} --non-interactive --clear-cache --message "${{ github.event.inputs.message }}"
