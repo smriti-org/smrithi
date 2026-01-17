@@ -130,9 +130,11 @@ export default function ProfileScreen({ onLogout }) {
         </View>
     );
 
+    const backgroundImage = require('../../assets/bg_profile_page.png');
+
     return (
         <ImageBackground
-            source={require('../../assets/bg-profile-page.png')}
+            source={backgroundImage}
             style={styles.container}
             resizeMode="cover"
         >

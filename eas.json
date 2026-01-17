@@ -15,7 +15,11 @@
                 "buildType": "apk",
                 "gradleCommand": ":app:assembleRelease"
             },
-            "autoIncrement": true
+            "autoIncrement": true,
+            "env": {
+                "JAVA_OPTS": "-XX:MaxMetaspaceSize=1g -Xmx4g",
+                "GRADLE_OPTS": "-Dorg.gradle.jvmargs=-Xmx4g -XX:MaxMetaspaceSize=1g"
+            }
         },
         "production": {
             "android": {

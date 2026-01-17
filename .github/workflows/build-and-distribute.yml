@@ -51,9 +51,9 @@ jobs:
       - name: Build APK
         run: |
           if [ -n "${{ github.event.inputs.message }}" ]; then
-            eas build --platform android --profile ${{ github.event.inputs.profile }} --non-interactive --message "${{ github.event.inputs.message }}"
+            eas build --platform android --profile ${{ github.event.inputs.profile }} --non-interactive --clear-cache --message "${{ github.event.inputs.message }}"
           else
-            eas build --platform android --profile ${{ github.event.inputs.profile }} --non-interactive --message "Build from branch: ${{ github.event.inputs.branch }}"
+            eas build --platform android --profile ${{ github.event.inputs.profile }} --non-interactive --clear-cache --message "Build from branch: ${{ github.event.inputs.branch }}"
           fi
 
       - name: Get build info
