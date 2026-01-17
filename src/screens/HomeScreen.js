@@ -132,11 +132,6 @@ export default function HomeScreen({ onCreatePost }) {
                 ListHeaderComponent={renderScrollableHeader}
                 contentContainerStyle={styles.scrollContent}
             />
-
-            {/* FAB (Floating Action Button) */}
-            <TouchableOpacity style={styles.fab} onPress={onCreatePost}>
-                <Text style={styles.fabText}>+</Text>
-            </TouchableOpacity>
         </ImageBackground>
     );
 }
@@ -190,7 +185,7 @@ const styles = StyleSheet.create({
         fontStyle: 'italic',
     },
     scrollContent: {
-        paddingBottom: 80, // Space for FAB
+        paddingBottom: 20, // Space for bottom tab bar
     },
     sectionContainer: {
         paddingHorizontal: SPACING.md,
@@ -214,7 +209,7 @@ const styles = StyleSheet.create({
         flex: 1,
         height: 1,
         backgroundColor: COLORS.border,
-        opacity: 0.5,
+        opacity: 0.2, // Much softer, less competing
     },
     card: {
         backgroundColor: COLORS.card,
@@ -279,27 +274,5 @@ const styles = StyleSheet.create({
         fontSize: 14,
         fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
         fontWeight: '600',
-    },
-    // New Styles for Posts and FAB
-    fab: {
-        position: 'absolute',
-        bottom: 50, // Increased to clear home indicator safely
-        right: 30,
-        width: 60,
-        height: 60,
-        borderRadius: 30,
-        backgroundColor: COLORS.accent, // Use accent from profile theme
-        justifyContent: 'center',
-        alignItems: 'center',
-        ...SHADOWS.medium,
-        shadowColor: COLORS.shadow,
-        shadowOpacity: 0.4,
-        elevation: 10,
-        zIndex: 100, // Ensure it's on top
-    },
-    fabText: {
-        fontSize: 34,
-        color: COLORS.white,
-        marginTop: -4,
     },
 });
