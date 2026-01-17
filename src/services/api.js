@@ -17,7 +17,7 @@ export const getAuthToken = async () => {
 
 /**
  * Create a new post via API
- * @param {Object} postData - {title, textContent}
+ * @param {Object} postData - {title (optional), textContent (optional), image (optional), document (optional)}
  * @returns {Promise<Object>} - {success, post, error}
  */
 export const createPost = async (postData) => {
@@ -28,23 +28,67 @@ export const createPost = async (postData) => {
         }
 
         console.log('Creating post with token:', token ? 'Token exists' : 'No token');
-        console.log('Post data:', postData);
+        console.log('Post data:', {
+            hasTitle: !!postData.title,
+            hasText: !!postData.textContent,
+            hasImage: !!postData.image,
+            hasDocument: !!postData.document
+        });
 
-        // Create URL-encoded form data
-        const formBody = new URLSearchParams();
-        formBody.append('content_type', 'note');
-        formBody.append('title', postData.title);
-        formBody.append('text_content', postData.textContent);
+        // Create FormData for multipart upload
+        const formData = new FormData();
 
-        console.log('Sending URL-encoded form data:', formBody.toString());
+        // Determine content_type based on attachments (priority: document > image > note)
+        let contentType = 'note';
+        if (postData.document) {
+            contentType = 'document';
+        } else if (postData.image) {
+            contentType = 'image';
+        }
+        formData.append('content_type', contentType);
+
+        // Add title and text_content only if provided
+        if (postData.title) {
+            formData.append('title', postData.title);
+        }
+        if (postData.textContent) {
+            formData.append('text_content', postData.textContent);
+        }
+
+        // Add image if provided
+        if (postData.image) {
+            const imageUri = postData.image.uri;
+            const filename = imageUri.split('/').pop();
+            const match = /\.(\w+)$/.exec(filename);
+            const type = match ? `image/${match[1]}` : 'image/jpeg';
+
+            formData.append('image', {
+                uri: imageUri,
+                name: filename,
+                type: type
+            });
+            console.log('Image attached:', filename, type);
+        }
+
+        // Add document if provided
+        if (postData.document) {
+            const doc = postData.document;
+            formData.append('document', {
+                uri: doc.uri,
+                name: doc.name,
+                type: doc.mimeType || 'application/pdf'
+            });
+            console.log('Document attached:', doc.name, doc.mimeType);
+        }
 
         const response = await fetch(`${API_BASE_URL}/posts/`, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-                'Authorization': `Bearer ${token}`
+                'Authorization': `Bearer ${token}`,
+                // Note: Don't set Content-Type header for FormData
+                // React Native will set it automatically with boundary
             },
-            body: formBody.toString()
+            body: formData
         });
 
         console.log('Response status:', response.status);

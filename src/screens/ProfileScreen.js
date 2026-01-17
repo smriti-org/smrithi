@@ -11,23 +11,16 @@ import {
     RefreshControl,
     Platform,
     TouchableWithoutFeedback,
-    ImageBackground
+    ImageBackground,
+    Image,
+    Linking
 } from 'react-native';
 import { useProfile } from '../hooks/useProfile';
 import { Ionicons } from '@expo/vector-icons';
+import { PROFILE_COLORS } from '../styles/theme';
+import ProfilePostCard from '../components/posts/ProfilePostCard';
 
-// Local Theme for Profile Page (Warm/Beige Aesthetic)
-const PROFILE_THEME = {
-    background: '#EBE0D5',      // Warm Beige / Paper
-    card: '#F5EEE6',            // Lighter Beige
-    textPrimary: '#4E342E',     // Dark Brown
-    textSecondary: '#795548',   // Medium Brown
-    accent: '#8D6E63',          // Avatar Brown
-    divider: '#D7CCC8',
-    icon: '#5D4037',
-    white: '#FFFFFF',
-    shadow: 'rgba(78, 52, 46, 0.1)',
-};
+const PROFILE_THEME = PROFILE_COLORS; // Alias for backward compatibility in this file
 
 // Font family helper
 const SERIF_FONT = Platform.OS === 'ios' ? 'Georgia' : 'serif';
@@ -128,34 +121,7 @@ export default function ProfileScreen({ onLogout }) {
         );
     };
 
-    const renderPostCard = ({ item }) => (
-        <View style={styles.postCard}>
-            {/* Header: Title & Menu */}
-            <View style={styles.cardHeader}>
-                <View style={styles.cardTitleContainer}>
-                    <Text style={styles.postTitle} numberOfLines={2}>{item.title}</Text>
-                    <Text style={styles.postDateDetails}>
-                        @{item.author?.username} • {new Date(item.createdAt).toLocaleDateString()}
-                    </Text>
-                </View>
-                <TouchableOpacity
-                    style={styles.optionsButton}
-                    onPress={() => handleOptionsPress(item.postId)}
-                >
-                    <Ionicons name="ellipsis-vertical" size={20} color={PROFILE_THEME.textSecondary} />
-                </TouchableOpacity>
-            </View>
 
-            {/* Content */}
-            <Text style={styles.postContent}>{item.textContent}</Text>
-
-            {/* Footer: Received Status */}
-            <View style={styles.cardFooter}>
-                <Ionicons name="sparkles-outline" size={16} color={PROFILE_THEME.textSecondary} />
-                <Text style={styles.footerText}>Received</Text>
-            </View>
-        </View>
-    );
 
     const renderEmptyState = () => (
         <View style={styles.emptyContainer}>
@@ -194,9 +160,11 @@ export default function ProfileScreen({ onLogout }) {
                         renderEmptyState()
                     ) : (
                         posts.map((post) => (
-                            <View key={post.postId}>
-                                {renderPostCard({ item: post })}
-                            </View>
+                            <ProfilePostCard
+                                key={post.postId || post.id}
+                                item={post}
+                                onOptionsPress={handleOptionsPress}
+                            />
                         ))
                     )}
                 </View>
@@ -258,28 +226,34 @@ export default function ProfileScreen({ onLogout }) {
                 animationType="fade"
                 onRequestClose={() => setDeleteModalVisible(false)}
             >
-                <View style={styles.modalOverlay}>
-                    <View style={styles.modalContent}>
-                        <Text style={styles.modalTitle}>Delete Reflection?</Text>
-                        <Text style={styles.modalText}>
-                            Are you sure you want to delete this reflection? This action cannot be undone.
-                        </Text>
-                        <View style={styles.modalButtons}>
-                            <TouchableOpacity
-                                style={[styles.modalButton, styles.cancelButton]}
-                                onPress={() => setDeleteModalVisible(false)}
-                            >
-                                <Text style={styles.cancelButtonText}>Cancel</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity
-                                style={[styles.modalButton, styles.deleteButton]}
-                                onPress={handleConfirmDelete}
-                            >
-                                <Text style={styles.deleteButtonText}>Delete</Text>
-                            </TouchableOpacity>
+                <TouchableOpacity
+                    style={styles.centeredOverlay}
+                    activeOpacity={1}
+                    onPress={() => setDeleteModalVisible(false)}
+                >
+                    <TouchableWithoutFeedback>
+                        <View style={styles.modalContent}>
+                            <Text style={styles.modalTitle}>Delete Reflection?</Text>
+                            <Text style={styles.modalText}>
+                                Are you sure you want to delete this reflection? This action cannot be undone.
+                            </Text>
+                            <View style={styles.modalButtons}>
+                                <TouchableOpacity
+                                    style={[styles.modalButton, styles.cancelButton]}
+                                    onPress={() => setDeleteModalVisible(false)}
+                                >
+                                    <Text style={styles.cancelButtonText}>Cancel</Text>
+                                </TouchableOpacity>
+                                <TouchableOpacity
+                                    style={[styles.modalButton, styles.deleteButton]}
+                                    onPress={handleConfirmDelete}
+                                >
+                                    <Text style={styles.deleteButtonText}>Delete</Text>
+                                </TouchableOpacity>
+                            </View>
                         </View>
-                    </View>
-                </View>
+                    </TouchableWithoutFeedback>
+                </TouchableOpacity>
             </Modal>
 
             {/* Settings Bottom Sheet - 3x3 Grid Menu */}
@@ -509,59 +483,7 @@ const styles = StyleSheet.create({
         marginBottom: 12,
         fontFamily: SERIF_FONT,
     },
-    postCard: {
-        backgroundColor: PROFILE_THEME.card, // Lighter beige
-        borderRadius: 16,
-        padding: 24,
-        marginBottom: 20,
-        shadowColor: PROFILE_THEME.shadow,
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.1,
-        shadowRadius: 12,
-        elevation: 3,
-    },
-    cardHeader: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'flex-start',
-        marginBottom: 16,
-    },
-    cardTitleContainer: {
-        flex: 1,
-        paddingRight: 12,
-    },
-    postTitle: {
-        fontSize: 20,
-        color: PROFILE_THEME.textPrimary,
-        fontFamily: SERIF_FONT,
-        marginBottom: 4,
-        lineHeight: 28,
-    },
-    postDateDetails: {
-        fontSize: 12,
-        color: PROFILE_THEME.textSecondary,
-        fontFamily: Platform.OS === 'ios' ? 'System' : 'sans-serif',
-    },
-    postContent: {
-        fontSize: 15,
-        color: PROFILE_THEME.textPrimary,
-        lineHeight: 24,
-        marginBottom: 24,
-        opacity: 0.9,
-    },
-    cardFooter: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        paddingTop: 16,
-        borderTopWidth: 1,
-        borderTopColor: PROFILE_THEME.divider,
-    },
-    footerText: {
-        marginLeft: 8,
-        fontSize: 13,
-        color: PROFILE_THEME.textSecondary,
-        fontFamily: SERIF_FONT,
-    },
+
     settingsSection: {
         paddingHorizontal: 20,
     },
@@ -730,6 +652,12 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: 'rgba(0,0,0,0.5)',
         justifyContent: 'flex-end',
+    },
+    centeredOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0,0,0,0.5)',
+        justifyContent: 'center',
+        alignItems: 'center',
     },
     gridMenuContainer: {
         backgroundColor: PROFILE_THEME.card,
