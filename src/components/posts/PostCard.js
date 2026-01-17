@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, Platform } from 'react-native';
 import { COLORS, SPACING, TYPOGRAPHY, SHADOWS } from '../../styles/theme';
 
 /**
@@ -12,12 +12,13 @@ export default function PostCard({ post }) {
             <Text style={styles.postTitle}>{post.title}</Text>
             <View style={styles.postMeta}>
                 <Text style={styles.postAuthor}>
-                    Author: {post.author?.username || 'Unknown'}
+                    {post.author?.username || 'Unknown'}
                 </Text>
                 <Text style={styles.postDate}>
                     {new Date(post.createdAt || post.date).toLocaleDateString()}
                 </Text>
             </View>
+            <View style={styles.divider} />
             <Text style={styles.postDescription}>
                 {post.textContent || post.description}
             </Text>
@@ -28,38 +29,53 @@ export default function PostCard({ post }) {
 const styles = StyleSheet.create({
     postCard: {
         backgroundColor: COLORS.card,
-        padding: SPACING.md,
+        padding: SPACING.lg,
         marginHorizontal: SPACING.md,
         marginBottom: SPACING.md,
-        borderRadius: 12,
-        ...SHADOWS.small,
-        borderLeftWidth: 4,
-        borderLeftColor: COLORS.primary,
+        borderRadius: 20,
+        ...SHADOWS.medium,
+        shadowColor: COLORS.shadow,
+        shadowOpacity: 0.1,
+        borderWidth: 1.5,
+        borderColor: 'rgba(78, 52, 46, 0.2)', // Increased visibility
     },
     postTitle: {
         ...TYPOGRAPHY.heading,
-        fontSize: 18,
-        color: COLORS.text,
+        fontSize: 20,
+        color: COLORS.primary,
         marginBottom: 4,
+        fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
+        fontWeight: '700',
     },
     postMeta: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        marginBottom: 8,
+        marginBottom: SPACING.sm,
     },
     postAuthor: {
         ...TYPOGRAPHY.caption,
-        color: COLORS.primary,
-        fontWeight: '600',
+        color: COLORS.secondary,
+        fontStyle: 'italic',
+        fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
     },
     postDate: {
         ...TYPOGRAPHY.caption,
         color: COLORS.textLight,
+        fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
+        opacity: 0.7,
+    },
+    divider: {
+        height: 1,
+        backgroundColor: COLORS.border,
+        opacity: 0.5,
+        marginBottom: SPACING.md,
     },
     postDescription: {
         ...TYPOGRAPHY.body,
-        fontSize: 14,
+        fontSize: 16,
         color: COLORS.text,
+        lineHeight: 24,
+        fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
     },
 });
