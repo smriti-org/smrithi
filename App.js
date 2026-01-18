@@ -14,9 +14,29 @@ import { useAuth } from './src/hooks/useAuth';
 
 // Main App Content (uses auth context)
 function AppContent() {
-  const { isAuthenticated, isLoading, logout } = useAuth();
+  const { isAuthenticated, isLoading, logout, token } = useAuth();
   const [currentScreen, setCurrentScreen] = React.useState('MAIN'); // 'MAIN' or 'CREATE_POST'
   const [authMode, setAuthMode] = React.useState('LANDING'); // 'LANDING', 'SIGN_UP', 'LOGIN'
+  const navigationRef = React.useRef(null);
+
+  // Setup notification listeners when authenticated
+  React.useEffect(() => {
+    if (isAuthenticated && token) {
+      const { setupNotificationListeners } = require('./src/services/notificationService');
+
+      // Create a minimal navigation object for notification handlers
+      const navigation = {
+        navigate: (routeName) => {
+          // Since we don't have direct access to React Navigation here,
+          // we'll just reset to main screen when notification is tapped
+          setCurrentScreen('MAIN');
+        }
+      };
+
+      const cleanup = setupNotificationListeners(navigation, token);
+      return cleanup;
+    }
+  }, [isAuthenticated, token]);
 
   // Check for OTA updates on app launch
   useEffect(() => {
