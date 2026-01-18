@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "761831713103",
+    "project_id": "smriti-2026",
+    "storage_bucket": "smriti-2026.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:761831713103:android:cbb454d15e78f7fc5bfd3a",
+        "android_client_info": {
+          "package_name": "com.yourcompany.smriti"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBr6zVadbadQIZ-2gpegGsCx5ECH-YUBRY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
