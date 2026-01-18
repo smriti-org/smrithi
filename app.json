@@ -18,6 +18,7 @@
     "android": {
       "package": "com.kalyan.smriti",
       "versionCode": 1,
+      "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
         "foregroundImage": "./assets/icon.png",
         "backgroundColor": "#ffffff"
