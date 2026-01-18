@@ -268,3 +268,94 @@ export const deletePost = async (postId) => {
         };
     }
 };
+
+/**
+ * Register device token for push notifications
+ * @param {string} token - FCM device token
+ * @param {string} platform - 'ios' or 'android'
+ * @returns {Promise<Object>} - {success, message}
+ */
+export const registerNotificationToken = async (token, platform) => {
+    try {
+        const authToken = await getAuthToken();
+        if (!authToken) {
+            return { success: false, error: 'No authentication token found' };
+        }
+
+        const response = await fetch(`${API_BASE_URL}/notifications/register-token`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${authToken}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                token,
+                platform
+            })
+        });
+
+        const data = await response.json();
+        console.log('Register token response:', data);
+
+        if (!response.ok) {
+            return {
+                success: false,
+                error: data.error || `Server error: ${response.status}`
+            };
+        }
+
+        return data;
+    } catch (error) {
+        console.error('Error registering notification token:', error);
+        return {
+            success: false,
+            error: error.message || 'Network error occurred'
+        };
+    }
+};
+
+/**
+ * Unregister device token from push notifications
+ * @param {string} token - FCM device token
+ * @param {string} platform - 'ios' or 'android'
+ * @returns {Promise<Object>} - {success, message}
+ */
+export const unregisterNotificationToken = async (token, platform) => {
+    try {
+        const authToken = await getAuthToken();
+        if (!authToken) {
+            return { success: false, error: 'No authentication token found' };
+        }
+
+        const response = await fetch(`${API_BASE_URL}/notifications/unregister-token`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${authToken}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                token,
+                platform
+            })
+        });
+
+        const data = await response.json();
+        console.log('Unregister token response:', data);
+
+        if (!response.ok) {
+            return {
+                success: false,
+                error: data.error || `Server error: ${response.status}`
+            };
+        }
+
+        return data;
+    } catch (error) {
+        console.error('Error unregistering notification token:', error);
+        return {
+            success: false,
+            error: error.message || 'Network error occurred'
+        };
+    }
+};
+

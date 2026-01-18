@@ -51,6 +51,22 @@ export function AuthProvider({ children }) {
             setToken(authToken);
             setUser(userData);
             setIsAuthenticated(true);
+
+            // Setup push notifications after successful login
+            try {
+                const {
+                    requestNotificationPermission,
+                    registerDeviceToken
+                } = require('../services/notificationService');
+
+                const hasPermission = await requestNotificationPermission();
+                if (hasPermission) {
+                    await registerDeviceToken(authToken);
+                }
+            } catch (notifError) {
+                // Don't block login if notification setup fails
+                console.error('Failed to setup notifications:', notifError);
+            }
         } catch (error) {
             console.error('Error during login:', error);
             throw error;
@@ -59,6 +75,15 @@ export function AuthProvider({ children }) {
 
     const logout = async () => {
         try {
+            // Unregister push notifications before logout
+            try {
+                const { unregisterDeviceToken } = require('../services/notificationService');
+                await unregisterDeviceToken(token);
+            } catch (notifError) {
+                // Don't block logout if notification cleanup fails
+                console.error('Failed to unregister notifications:', notifError);
+            }
+
             await AsyncStorage.multiRemove([STORAGE_KEY_USER_TOKEN, STORAGE_KEY_USER_DATA]);
             setToken(null);
             setUser(null);
