@@ -22,7 +22,16 @@
         "foregroundImage": "./assets/icon.png",
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "permissions": [
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.READ_MEDIA_VISUAL_USER_SELECTED",
+        "android.permission.ACCESS_MEDIA_LOCATION",
+        "android.permission.READ_MEDIA_IMAGES",
+        "android.permission.READ_MEDIA_VIDEO",
+        "android.permission.READ_MEDIA_AUDIO"
+      ]
     },
     "plugins": [
       [
@@ -37,10 +46,13 @@
         "expo-build-properties",
         {
           "android": {
-            "enableLint": false
+            "enableLint": false,
+            "usesCleartextTraffic": true
           }
         }
-      ]
+      ],
+      "@react-native-firebase/app",
+      "@react-native-firebase/messaging"
     ],
     "web": {
       "favicon": "./assets/favicon.png"
@@ -52,6 +64,11 @@
       "checkAutomatically": "ON_LOAD",
       "fallbackToCacheTimeout": 0
     },
-    "owner": "kalyanveenam"
+    "owner": "kalyanveenam",
+    "extra": {
+      "eas": {
+        "projectId": "7af96bfd-bbfa-45aa-b88c-d2db3755fb1f"
+      }
+    }
   }
 }
