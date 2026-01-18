@@ -1,6 +1,7 @@
 import { StatusBar } from 'expo-status-bar';
-import React from 'react';
-import { StyleSheet, View } from 'react-native';
+import React, { useEffect } from 'react';
+import { StyleSheet, View, Alert } from 'react-native';
+import * as Updates from 'expo-updates';
 import { NavigationContainer } from '@react-navigation/native';
 import CreatePostScreen from './src/screens/CreatePostScreen';
 import AuthScreen from './src/screens/AuthScreen';
@@ -36,6 +37,39 @@ function AppContent() {
       return cleanup;
     }
   }, [isAuthenticated, token]);
+
+  // Check for OTA updates on app launch
+  useEffect(() => {
+    async function checkForUpdates() {
+      try {
+        // Only check in production builds, not in dev mode
+        if (!__DEV__) {
+          const update = await Updates.checkForUpdateAsync();
+
+          if (update.isAvailable) {
+            Alert.alert(
+              'Update Available',
+              'A new version of the app is available. Would you like to update now?',
+              [
+                { text: 'Later', style: 'cancel' },
+                {
+                  text: 'Update Now',
+                  onPress: async () => {
+                    await Updates.fetchUpdateAsync();
+                    await Updates.reloadAsync();
+                  }
+                }
+              ]
+            );
+          }
+        }
+      } catch (error) {
+        console.log('Error checking for updates:', error);
+      }
+    }
+
+    checkForUpdates();
+  }, []);
 
   const handleLogout = async () => {
     await logout();

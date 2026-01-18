@@ -14,7 +14,7 @@ export default function LandingScreen({ onSignUpPress, onLoginPress }) {
                         resizeMode="contain"
                     />
                     <Text style={styles.title}>Smriti</Text>
-                    <Text style={styles.subtitle}>Memory & Reflection</Text>
+                    <Text style={styles.subtitle}>Memory & Reflection v1.1</Text>
                 </View>
 
                 {/* Action Buttons */}

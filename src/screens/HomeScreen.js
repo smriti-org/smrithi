@@ -60,7 +60,7 @@ export default function HomeScreen({ onCreatePost }) {
         <View>
             <View style={styles.sectionContainer}>
                 <ImageBackground
-                    source={require('../../assets/bg_card.png')}
+                    source={require('../../assets/bg_card.jpg')}
                     style={styles.card}
                     resizeMode="cover"
                     imageStyle={{ borderRadius: 20 }}
@@ -99,13 +99,13 @@ export default function HomeScreen({ onCreatePost }) {
 
     return (
         <ImageBackground
-            source={require('../../assets/bg_home_page.png')}
+            source={require('../../assets/bg_home_page.jpg')}
             style={styles.container}
             resizeMode="cover"
         >
             {/* Fixed Header */}
             <ImageBackground
-                source={require('../../assets/bg_home_page.png')}
+                source={require('../../assets/bg_home_page.jpg')}
                 style={styles.fixedHeader}
                 resizeMode="cover"
                 imageStyle={{ borderBottomLeftRadius: 24, borderBottomRightRadius: 24 }}
