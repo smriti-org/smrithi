@@ -27,6 +27,14 @@ export default function AppNavigator({ onCreatePost, onLogout }) {
                     paddingBottom: 5,
                     paddingTop: 5,
                     height: 60,
+                    borderTopLeftRadius: 24,
+                    borderTopRightRadius: 24,
+                    position: 'absolute',
+                    elevation: 8,
+                    shadowColor: '#000',
+                    shadowOffset: { width: 0, height: -2 },
+                    shadowOpacity: 0.1,
+                    shadowRadius: 8,
                 },
             }}
         >
