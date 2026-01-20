@@ -1,28 +1,65 @@
 import messaging from '@react-native-firebase/messaging';
-import { Platform, Alert } from 'react-native';
+import { Platform, Alert, PermissionsAndroid } from 'react-native';
 import { registerNotificationToken, unregisterNotificationToken } from './api';
 
 /**
  * Request notification permission from the user
+ * On Android 13+ (API 33+), we need to use PermissionsAndroid directly
  * @returns {Promise<boolean>} true if permission granted, false otherwise
  */
 export async function requestNotificationPermission() {
     try {
-        const authStatus = await messaging().requestPermission();
-        const enabled =
-            authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
-            authStatus === messaging.AuthorizationStatus.PROVISIONAL;
+        if (Platform.OS === 'android') {
+            // For Android 13+ (API 33+), we need to request POST_NOTIFICATIONS permission manually
+            // messaging().requestPermission() does NOT show the system popup on Android 13+
+            const androidVersion = Platform.Version;
+            console.log('📱 Android API Level:', androidVersion);
 
-        if (enabled) {
-            console.log('✅ Notification permission granted');
-            return true;
+            if (androidVersion >= 33) {
+                console.log('🔔 Requesting POST_NOTIFICATIONS permission via PermissionsAndroid...');
+                const result = await PermissionsAndroid.request(
+                    PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS
+                );
+                console.log('🔔 Permission result:', result);
+
+                if (result === PermissionsAndroid.RESULTS.GRANTED) {
+                    console.log('✅ Notification permission granted');
+                    return true;
+                } else if (result === PermissionsAndroid.RESULTS.DENIED) {
+                    console.log('❌ Notification permission denied');
+                    return false;
+                } else if (result === PermissionsAndroid.RESULTS.NEVER_ASK_AGAIN) {
+                    console.log('❌ Notification permission denied permanently');
+                    Alert.alert(
+                        'Notifications Disabled',
+                        'Please enable notifications in Settings > Apps > Smriti > Notifications'
+                    );
+                    return false;
+                }
+            } else {
+                // For Android 12 and below, permission is auto-granted at install
+                console.log('✅ Android < 13, permission auto-granted');
+                return true;
+            }
+        } else {
+            // iOS - use Firebase messaging permission request
+            const authStatus = await messaging().requestPermission();
+            const enabled =
+                authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
+                authStatus === messaging.AuthorizationStatus.PROVISIONAL;
+
+            if (enabled) {
+                console.log('✅ Notification permission granted');
+                return true;
+            }
+            console.log('❌ Notification permission denied');
+            return false;
         }
-        console.log('❌ Notification permission denied');
-        return false;
     } catch (error) {
         console.error('Error requesting notification permission:', error);
         return false;
     }
+    return false;
 }
 
 /**

@@ -70,14 +70,14 @@
       "policy": "appVersion"
     },
     "updates": {
-      "url": "https://u.expo.dev/bcd2f061-f216-4506-b5b8-14d909f1a7a1",
+      "url": "https://u.expo.dev/1fd16c25-c042-426d-a6a1-39dfd39a1882",
       "checkAutomatically": "ON_LOAD",
       "fallbackToCacheTimeout": 0
     },
-    "owner": "vinayykkumar",
+    "owner": "kalyan.veenam",
     "extra": {
       "eas": {
-        "projectId": "bcd2f061-f216-4506-b5b8-14d909f1a7a1"
+        "projectId": "1fd16c25-c042-426d-a6a1-39dfd39a1882"
       }
     }
   }
