@@ -1,11 +1,17 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import HomeScreen from '../screens/HomeScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 import { COLORS } from '../styles/theme';
 
 const Tab = createBottomTabNavigator();
+
+// Dummy component for the Create tab (won't be rendered)
+function CreatePlaceholder() {
+    return <View />;
+}
 
 export default function AppNavigator({ onCreatePost, onLogout }) {
     return (
@@ -21,6 +27,14 @@ export default function AppNavigator({ onCreatePost, onLogout }) {
                     paddingBottom: 5,
                     paddingTop: 5,
                     height: 60,
+                    borderTopLeftRadius: 24,
+                    borderTopRightRadius: 24,
+                    position: 'absolute',
+                    elevation: 8,
+                    shadowColor: '#000',
+                    shadowOffset: { width: 0, height: -2 },
+                    shadowOpacity: 0.1,
+                    shadowRadius: 8,
                 },
             }}
         >
@@ -42,6 +56,30 @@ export default function AppNavigator({ onCreatePost, onLogout }) {
                 )}
             </Tab.Screen>
             <Tab.Screen
+                name="Create"
+                component={CreatePlaceholder}
+                listeners={{
+                    tabPress: (e) => {
+                        // Prevent default navigation
+                        e.preventDefault();
+                        // Call the create post handler
+                        onCreatePost();
+                    },
+                }}
+                options={{
+                    tabBarIcon: ({ color, size }) => (
+                        <View style={{ marginTop: -2 }}>
+                            <Ionicons
+                                name="add-circle-sharp"
+                                size={32}
+                                color={color}
+                            />
+                        </View>
+                    ),
+                    tabBarLabel: 'Create',
+                }}
+            />
+            <Tab.Screen
                 name="Profile"
                 options={{
                     tabBarIcon: ({ color, size }) => (
@@ -55,3 +93,4 @@ export default function AppNavigator({ onCreatePost, onLogout }) {
         </Tab.Navigator>
     );
 }
+
