@@ -13,7 +13,11 @@ export default function PostCard({ post }) {
     const imageUrl = getProp('imageUrl', 'image_url');
     const documentUrl = getProp('documentUrl', 'document_url');
     const authorName = post.author?.username || post.author_name || 'Unknown';
-    const postDate = new Date(post.createdAt || post.created_at || post.date).toLocaleDateString();
+    const postDate = new Date(post.createdAt || post.created_at || post.date).toLocaleDateString('en-GB', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric'
+    });
     const content = post.textContent || post.text_content || post.description;
 
     // Dynamic Image Sizing
@@ -34,15 +38,10 @@ export default function PostCard({ post }) {
     return (
         <View style={styles.postCard}>
             <View style={styles.postContent}>
+                {/* Title - Clean and prominent */}
                 <Text style={styles.postTitle}>{post.title}</Text>
-                <View style={styles.postMeta}>
-                    <Text style={styles.postAuthor}>
-                        Author: {authorName}
-                    </Text>
-                    <Text style={styles.postDate}>
-                        {postDate}
-                    </Text>
-                </View>
+
+                {/* Reflection content - Uninterrupted flow */}
                 <Text style={styles.postDescription}>
                     {content}
                 </Text>
@@ -73,6 +72,16 @@ export default function PostCard({ post }) {
                         </View>
                     </TouchableOpacity>
                 )}
+
+                {/* Divider - Signals closure */}
+                <View style={styles.divider} />
+
+                {/* Footer - Identity comes after meaning */}
+                <View style={styles.footer}>
+                    <Text style={styles.footerText}>
+                        — {authorName} · {postDate}
+                    </Text>
+                </View>
             </View>
         </View>
     );
@@ -81,15 +90,15 @@ export default function PostCard({ post }) {
 const styles = StyleSheet.create({
     postCard: {
         backgroundColor: COLORS.card,
-        padding: SPACING.lg,
+        padding: SPACING.xl, // Increased for more breath
         marginHorizontal: SPACING.md,
         marginBottom: SPACING.md,
         borderRadius: 20,
         ...SHADOWS.medium,
         shadowColor: COLORS.shadow,
-        shadowOpacity: 0.1,
-        borderWidth: 1.5,
-        borderColor: 'rgba(78, 52, 46, 0.2)',
+        shadowOpacity: 0.08,
+        borderWidth: 1,
+        borderColor: 'rgba(78, 52, 46, 0.15)',
     },
     postImage: {
         width: '100%',
@@ -103,34 +112,17 @@ const styles = StyleSheet.create({
         ...TYPOGRAPHY.heading,
         fontSize: 20,
         color: COLORS.primary,
-        marginBottom: 4,
+        marginBottom: SPACING.md,
         fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
-        fontWeight: '700',
-    },
-    postMeta: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: SPACING.sm,
-    },
-    postAuthor: {
-        ...TYPOGRAPHY.caption,
-        color: COLORS.secondary,
-        fontStyle: 'italic',
-        fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
-    },
-    postDate: {
-        ...TYPOGRAPHY.caption,
-        color: COLORS.textLight,
-        fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
-        opacity: 0.7,
+        fontWeight: '500', // Lighter weight - let body dominate
     },
     postDescription: {
         ...TYPOGRAPHY.body,
         fontSize: 16,
         color: COLORS.text,
-        lineHeight: 24,
+        lineHeight: 27, // ~1.7 line-height for comfortable reading
         fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
+        marginBottom: SPACING.md,
     },
     documentContainer: {
         flexDirection: 'row',
@@ -168,5 +160,23 @@ const styles = StyleSheet.create({
     documentAction: {
         ...TYPOGRAPHY.caption,
         color: COLORS.primary,
+    },
+    divider: {
+        height: 1,
+        backgroundColor: COLORS.border,
+        marginTop: SPACING.xl, // More space above for breathing room
+        marginBottom: SPACING.lg, // More space below too
+        opacity: 0.25, // Softer
+    },
+    footer: {
+        alignItems: 'flex-start',
+    },
+    footerText: {
+        ...TYPOGRAPHY.caption,
+        fontSize: 12, // Smaller, more subtle
+        color: COLORS.textLight,
+        fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
+        opacity: 0.45, // Lower contrast - signature-like
+        fontStyle: 'italic',
     },
 });

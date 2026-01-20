@@ -8,7 +8,8 @@ import {
     Linking,
     AppState,
     Platform,
-    ImageBackground
+    ImageBackground,
+    Modal
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS, SPACING, TYPOGRAPHY, SHADOWS } from '../styles/theme';
@@ -18,6 +19,7 @@ import { PostList } from '../components';
 export default function HomeScreen({ onCreatePost }) {
     const { posts, refreshing, refreshPosts } = usePosts();
     const appState = useRef(AppState.currentState);
+    const [showSmritiModal, setShowSmritiModal] = useState(false);
 
     // Auto-refresh when app comes to foreground
     useEffect(() => {
@@ -56,46 +58,7 @@ export default function HomeScreen({ onCreatePost }) {
         }
     };
 
-    const renderScrollableHeader = () => (
-        <View>
-            <View style={styles.sectionContainer}>
-                <ImageBackground
-                    source={require('../../assets/bg_card.jpg')}
-                    style={styles.card}
-                    resizeMode="cover"
-                    imageStyle={{ borderRadius: 20 }}
-                >
-                    <View style={styles.cardImageContainer}>
-                        <Image
-                            source={cardData.imageUri}
-                            style={styles.cardImage}
-                            resizeMode="cover"
-                        />
-                        <View style={styles.cardOverlay} />
-                    </View>
-
-                    <View style={styles.cardContent}>
-                        <Text style={styles.cardTitle}>{cardData.title}</Text>
-
-                        {cardData.author && (
-                            <View style={styles.authorContainer}>
-                                <Text style={styles.authorText}>{cardData.author}</Text>
-                            </View>
-                        )}
-
-                        <Text style={styles.cardText}>{cardData.description}</Text>
-                    </View>
-                </ImageBackground>
-            </View>
-
-            {posts.length > 0 && (
-                <View style={styles.feedHeader}>
-                    <Text style={styles.sectionTitle}>Reflections</Text>
-                    <View style={styles.sectionDivider} />
-                </View>
-            )}
-        </View>
-    );
+    const renderScrollableHeader = () => null;
 
     return (
         <ImageBackground
@@ -118,8 +81,18 @@ export default function HomeScreen({ onCreatePost }) {
                 }]} />
 
                 <View style={styles.headerTopRow}>
+                    <TouchableOpacity
+                        style={styles.appIconContainer}
+                        onPress={() => setShowSmritiModal(true)}
+                        activeOpacity={0.7}
+                    >
+                        <Image
+                            source={require('../../assets/icon.png')}
+                            style={styles.appIcon}
+                            resizeMode="cover"
+                        />
+                    </TouchableOpacity>
                     <View style={styles.headerTextContainer}>
-                        <Text style={styles.headerTitle}>Hari Om</Text>
                         <Text style={styles.headerSubtitle}>Daily Reflections</Text>
                     </View>
                 </View>
@@ -133,10 +106,54 @@ export default function HomeScreen({ onCreatePost }) {
                 contentContainerStyle={styles.scrollContent}
             />
 
-            {/* FAB (Floating Action Button) */}
-            <TouchableOpacity style={styles.fab} onPress={onCreatePost}>
-                <Text style={styles.fabText}>+</Text>
-            </TouchableOpacity>
+            {/* Smriti Modal Popup */}
+            <Modal
+                visible={showSmritiModal}
+                transparent={true}
+                animationType="fade"
+                onRequestClose={() => setShowSmritiModal(false)}
+            >
+                <TouchableOpacity
+                    style={styles.modalOverlay}
+                    activeOpacity={1}
+                    onPress={() => setShowSmritiModal(false)}
+                >
+                    <TouchableOpacity
+                        activeOpacity={1}
+                        onPress={(e) => e.stopPropagation()}
+                    >
+                        <View style={styles.modalContent}>
+                            <ImageBackground
+                                source={require('../../assets/bg_card.jpg')}
+                                style={styles.card}
+                                resizeMode="cover"
+                                imageStyle={{ borderRadius: 20 }}
+                            >
+                                <View style={styles.cardImageContainer}>
+                                    <Image
+                                        source={cardData.imageUri}
+                                        style={styles.cardImage}
+                                        resizeMode="cover"
+                                    />
+                                    <View style={styles.cardOverlay} />
+                                </View>
+
+                                <View style={styles.cardContent}>
+                                    <Text style={styles.cardTitle}>{cardData.title}</Text>
+
+                                    {cardData.author && (
+                                        <View style={styles.authorContainer}>
+                                            <Text style={styles.authorText}>{cardData.author}</Text>
+                                        </View>
+                                    )}
+
+                                    <Text style={styles.cardText}>{cardData.description}</Text>
+                                </View>
+                            </ImageBackground>
+                        </View>
+                    </TouchableOpacity>
+                </TouchableOpacity>
+            </Modal>
         </ImageBackground>
     );
 }
@@ -148,9 +165,9 @@ const styles = StyleSheet.create({
         // paddingTop: 50, // Removed, handled by Fixed Header padding
     },
     fixedHeader: {
-        paddingTop: Platform.OS === 'ios' ? 60 : 40, // Handle status bar here since it's an ImageBackground now
+        paddingTop: Platform.OS === 'ios' ? 45 : 28, // Further reduced
         paddingHorizontal: SPACING.lg,
-        paddingBottom: SPACING.lg,
+        paddingBottom: SPACING.sm, // Further reduced
         zIndex: 10,
         ...SHADOWS.medium, // Add shadow for depth
         shadowColor: COLORS.shadow,
@@ -163,34 +180,36 @@ const styles = StyleSheet.create({
     },
     headerTextContainer: {
         flex: 1,
+        justifyContent: 'center',
     },
-    headerIconContainer: {
+    appIconContainer: {
         width: 44,
         height: 44,
         borderRadius: 22,
-        backgroundColor: 'rgba(255,255,255,0.3)', // Subtle highlight behind icon
-        justifyContent: 'center',
-        alignItems: 'center',
+        overflow: 'hidden',
+        marginRight: SPACING.md,
+        ...SHADOWS.small,
+        shadowColor: COLORS.shadow,
+        shadowOpacity: 0.2,
+        backgroundColor: COLORS.card,
+        borderWidth: 2,
+        borderColor: 'rgba(78, 52, 46, 0.15)',
     },
-    headerTitle: {
-        ...TYPOGRAPHY.title,
-        color: COLORS.primary,
-        fontSize: 32,
-        fontWeight: '700',
-        letterSpacing: -0.5,
-        fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
+    appIcon: {
+        width: '100%',
+        height: '100%',
     },
     headerSubtitle: {
-        ...TYPOGRAPHY.body,
-        color: COLORS.secondary,
-        fontSize: 16,
-        marginTop: -4,
+        ...TYPOGRAPHY.title,
+        color: COLORS.primary,
+        fontSize: 24,
+        fontWeight: '600',
         letterSpacing: 0.5,
         fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
         fontStyle: 'italic',
     },
     scrollContent: {
-        paddingBottom: 80, // Space for FAB
+        paddingBottom: 20, // Space for bottom tab bar
     },
     sectionContainer: {
         paddingHorizontal: SPACING.md,
@@ -214,7 +233,7 @@ const styles = StyleSheet.create({
         flex: 1,
         height: 1,
         backgroundColor: COLORS.border,
-        opacity: 0.5,
+        opacity: 0.2, // Much softer, less competing
     },
     card: {
         backgroundColor: COLORS.card,
@@ -280,26 +299,15 @@ const styles = StyleSheet.create({
         fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
         fontWeight: '600',
     },
-    // New Styles for Posts and FAB
-    fab: {
-        position: 'absolute',
-        bottom: 50, // Increased to clear home indicator safely
-        right: 30,
-        width: 60,
-        height: 60,
-        borderRadius: 30,
-        backgroundColor: COLORS.accent, // Use accent from profile theme
+    modalOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0, 0, 0, 0.6)',
         justifyContent: 'center',
         alignItems: 'center',
-        ...SHADOWS.medium,
-        shadowColor: COLORS.shadow,
-        shadowOpacity: 0.4,
-        elevation: 10,
-        zIndex: 100, // Ensure it's on top
+        padding: SPACING.lg,
     },
-    fabText: {
-        fontSize: 34,
-        color: COLORS.white,
-        marginTop: -4,
+    modalContent: {
+        width: '100%',
+        maxWidth: 400,
     },
 });
