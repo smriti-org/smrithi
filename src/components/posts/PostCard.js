@@ -20,6 +20,11 @@ export default function PostCard({ post }) {
     });
     const content = post.textContent || post.text_content || post.description;
 
+    // Expandable content state
+    const [isExpanded, setIsExpanded] = React.useState(false);
+    const [textTruncated, setTextTruncated] = React.useState(false);
+    const [measured, setMeasured] = React.useState(false);
+
     // Dynamic Image Sizing
     const [aspectRatio, setAspectRatio] = React.useState(4 / 3);
 
@@ -35,16 +40,48 @@ export default function PostCard({ post }) {
         }
     }, [imageUrl]);
 
+    const handleTextLayout = (e) => {
+        if (!measured) {
+            // First render - measure full text
+            const lines = e.nativeEvent.lines;
+            if (lines.length > 6) {
+                setTextTruncated(true);
+            }
+            setMeasured(true);
+        }
+    };
+
     return (
         <View style={styles.postCard}>
             <View style={styles.postContent}>
+                {/* Decorative top divider */}
+                <View style={styles.topDivider}>
+                    <Text style={styles.decorativeIcon}>✦</Text>
+                </View>
+
                 {/* Title - Clean and prominent */}
                 <Text style={styles.postTitle}>{post.title}</Text>
 
                 {/* Reflection content - Uninterrupted flow */}
-                <Text style={styles.postDescription}>
+                <Text
+                    style={styles.postDescription}
+                    numberOfLines={measured && !isExpanded ? 6 : undefined}
+                    onTextLayout={handleTextLayout}
+                >
                     {content}
                 </Text>
+
+                {/* Load more / Show less button */}
+                {textTruncated && (
+                    <TouchableOpacity
+                        onPress={() => setIsExpanded(!isExpanded)}
+                        style={styles.loadMoreContainer}
+                    >
+                        <Text style={styles.loadMoreText}>
+                            {isExpanded ? 'Show less ↑' : 'Load more →'}
+                        </Text>
+                    </TouchableOpacity>
+                )}
 
                 {/* Display image if available */}
                 {imageUrl && (
@@ -89,16 +126,19 @@ export default function PostCard({ post }) {
 
 const styles = StyleSheet.create({
     postCard: {
-        backgroundColor: COLORS.card,
-        padding: SPACING.xl, // Increased for more breath
+        backgroundColor: '#F5F1E8', // Warm vintage paper color
+        padding: SPACING.xl,
         marginHorizontal: SPACING.md,
-        marginBottom: SPACING.md,
-        borderRadius: 20,
+        marginBottom: SPACING.lg,
+        borderRadius: 16,
         ...SHADOWS.medium,
-        shadowColor: COLORS.shadow,
-        shadowOpacity: 0.08,
-        borderWidth: 1,
-        borderColor: 'rgba(78, 52, 46, 0.15)',
+        shadowColor: '#000',
+        shadowOpacity: 0.25, // Stronger shadow for depth
+        shadowOffset: { width: 0, height: 4 },
+        shadowRadius: 8,
+        elevation: 5,
+        borderWidth: 1.5,
+        borderColor: 'rgba(78, 52, 46, 0.25)', // More visible decorative border
     },
     postImage: {
         width: '100%',
@@ -107,6 +147,16 @@ const styles = StyleSheet.create({
     },
     postContent: {
         // No padding needed, handled by postCard
+    },
+    topDivider: {
+        alignItems: 'center',
+        marginBottom: SPACING.md,
+        paddingTop: SPACING.xs,
+    },
+    decorativeIcon: {
+        fontSize: 16,
+        color: 'rgba(78, 52, 46, 0.4)',
+        fontWeight: '300',
     },
     postTitle: {
         ...TYPOGRAPHY.heading,
@@ -122,7 +172,19 @@ const styles = StyleSheet.create({
         color: COLORS.text,
         lineHeight: 27, // ~1.7 line-height for comfortable reading
         fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
+        marginBottom: SPACING.sm, // Reduced to make space for load more button
+    },
+    loadMoreContainer: {
         marginBottom: SPACING.md,
+        alignSelf: 'flex-start',
+    },
+    loadMoreText: {
+        ...TYPOGRAPHY.body,
+        fontSize: 15,
+        color: COLORS.primary,
+        fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
+        fontWeight: '600',
+        fontStyle: 'italic',
     },
     documentContainer: {
         flexDirection: 'row',
