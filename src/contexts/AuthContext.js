@@ -54,19 +54,22 @@ export function AuthProvider({ children }) {
             setIsAuthenticated(true);
 
             // Setup push notifications after successful login
-            try {
-                const {
-                    requestNotificationPermission,
-                    registerDeviceToken
-                } = require('../services/notificationService');
+            // Skip in dev mode to avoid Firebase native module errors
+            if (!__DEV__) {
+                try {
+                    const {
+                        requestNotificationPermission,
+                        registerDeviceToken
+                    } = require('../services/notificationService');
 
-                const hasPermission = await requestNotificationPermission();
-                if (hasPermission) {
-                    await registerDeviceToken(authToken);
+                    const hasPermission = await requestNotificationPermission();
+                    if (hasPermission) {
+                        await registerDeviceToken(authToken);
+                    }
+                } catch (notifError) {
+                    // Don't block login if notification setup fails
+                    console.error('Failed to setup notifications:', notifError);
                 }
-            } catch (notifError) {
-                // Don't block login if notification setup fails
-                console.error('Failed to setup notifications:', notifError);
             }
         } catch (error) {
             console.error('Error during login:', error);

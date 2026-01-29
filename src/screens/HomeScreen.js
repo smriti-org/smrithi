@@ -8,9 +8,10 @@ import {
     Linking,
     AppState,
     Platform,
+    Modal,
     ImageBackground,
-    Modal
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS, SPACING, TYPOGRAPHY, SHADOWS } from '../styles/theme';
 import { usePosts } from '../hooks/usePosts';
@@ -61,25 +62,16 @@ export default function HomeScreen({ onCreatePost }) {
     const renderScrollableHeader = () => null;
 
     return (
-        <ImageBackground
-            source={require('../../assets/bg_home_page.jpg')}
+        <LinearGradient
+            colors={['#F5F1E8', '#EDE6D8']}
             style={styles.container}
-            resizeMode="cover"
+            start={{ x: 0, y: 0 }}
+            end={{ x: 0, y: 1 }}
         >
-            {/* Fixed Header */}
-            <ImageBackground
-                source={require('../../assets/bg_home_page.jpg')}
-                style={styles.fixedHeader}
-                resizeMode="cover"
-                imageStyle={{ borderBottomLeftRadius: 24, borderBottomRightRadius: 24 }}
-            >
-                {/* Overlay to modify background tone */}
-                <View style={[StyleSheet.absoluteFill, {
-                    backgroundColor: 'rgba(141, 110, 99, 0.1)', // Light brown tint 
-                    borderBottomLeftRadius: 24,
-                    borderBottomRightRadius: 24,
-                }]} />
 
+
+            {/* Fixed Header */}
+            <View style={styles.fixedHeader}>
                 <View style={styles.headerTopRow}>
                     <TouchableOpacity
                         style={styles.appIconContainer}
@@ -96,7 +88,7 @@ export default function HomeScreen({ onCreatePost }) {
                         <Text style={styles.headerSubtitle}>Daily Reflections</Text>
                     </View>
                 </View>
-            </ImageBackground>
+            </View>
 
             <PostList
                 posts={posts}
@@ -154,7 +146,7 @@ export default function HomeScreen({ onCreatePost }) {
                     </TouchableOpacity>
                 </TouchableOpacity>
             </Modal>
-        </ImageBackground>
+        </LinearGradient>
     );
 }
 
@@ -165,13 +157,16 @@ const styles = StyleSheet.create({
         // paddingTop: 50, // Removed, handled by Fixed Header padding
     },
     fixedHeader: {
-        paddingTop: Platform.OS === 'ios' ? 45 : 28, // Further reduced
+        paddingTop: Platform.OS === 'ios' ? 80 : 65, // Increased to push content down
         paddingHorizontal: SPACING.lg,
-        paddingBottom: SPACING.sm, // Further reduced
+        paddingBottom: SPACING.sm,
         zIndex: 10,
-        ...SHADOWS.medium, // Add shadow for depth
-        shadowColor: COLORS.shadow,
-        shadowOpacity: 0.15,
+        backgroundColor: 'rgba(245, 241, 232, 0.95)', // Semi-transparent cream background
+    },
+    headerBottomLine: {
+        height: 1,
+        backgroundColor: 'rgba(78, 52, 46, 0.3)',
+        marginTop: SPACING.sm,
     },
     headerTopRow: {
         flexDirection: 'row',
@@ -207,6 +202,8 @@ const styles = StyleSheet.create({
         letterSpacing: 0.5,
         fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
         fontStyle: 'italic',
+        marginTop: SPACING.sm,
+        textDecorationLine: 'none', // Remove underline
     },
     scrollContent: {
         paddingBottom: 20, // Space for bottom tab bar

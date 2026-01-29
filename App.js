@@ -21,7 +21,8 @@ function AppContent() {
 
   // Setup notification listeners when authenticated
   React.useEffect(() => {
-    if (isAuthenticated && token) {
+    if (isAuthenticated && token && !__DEV__) {
+      // Only run in production builds, skip in dev mode to avoid Firebase errors
       const { setupNotificationListeners } = require('./src/services/notificationService');
 
       // Create a minimal navigation object for notification handlers
