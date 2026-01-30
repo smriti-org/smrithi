@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, KeyboardAvoidingView, Platform, ScrollView, Alert, Image, Dimensions, ActivityIndicator, Keyboard } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, KeyboardAvoidingView, Platform, ScrollView, Alert, Image, Dimensions, ActivityIndicator, Keyboard, ImageBackground } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import * as DocumentPicker from 'expo-document-picker';
@@ -100,8 +100,12 @@ export default function CreatePostScreen({ onSave, onCancel }) {
     };
 
     return (
-        <View style={styles.container}>
-            {/* Background Texture Simulation via Color Overlay */}
+        <ImageBackground
+            source={require('../../assets/garden_bg.png')}
+            style={styles.container}
+            resizeMode="cover"
+        >
+            {/* Semi-transparent overlay for readability */}
             <View style={styles.backgroundLayer} />
 
             {/* Custom Header: Back & Share */}
@@ -205,7 +209,7 @@ export default function CreatePostScreen({ onSave, onCancel }) {
 
 
             </KeyboardAvoidingView>
-        </View>
+        </ImageBackground>
     );
 }
 
@@ -216,8 +220,7 @@ const styles = StyleSheet.create({
     },
     backgroundLayer: {
         ...StyleSheet.absoluteFillObject,
-        backgroundColor: '#F2ECE4', // Light warm overly
-        opacity: 0.6,
+        backgroundColor: 'rgba(245, 241, 232, 0.85)', // Semi-transparent overlay
     },
     keyboardView: {
         flex: 1,

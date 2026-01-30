@@ -62,91 +62,97 @@ export default function HomeScreen({ onCreatePost }) {
     const renderScrollableHeader = () => null;
 
     return (
-        <LinearGradient
-            colors={['#F5F1E8', '#EDE6D8']}
+        <ImageBackground
+            source={require('../../assets/garden_bg.png')}
             style={styles.container}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 0, y: 1 }}
+            resizeMode="cover"
         >
+            <LinearGradient
+                colors={['rgba(245, 241, 232, 0.85)', 'rgba(237, 230, 216, 0.90)']}
+                style={styles.container}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 0, y: 1 }}
+            >
 
 
-            {/* Fixed Header */}
-            <View style={styles.fixedHeader}>
-                <View style={styles.headerTopRow}>
-                    <TouchableOpacity
-                        style={styles.appIconContainer}
-                        onPress={() => setShowSmritiModal(true)}
-                        activeOpacity={0.7}
-                    >
-                        <Image
-                            source={require('../../assets/icon.png')}
-                            style={styles.appIcon}
-                            resizeMode="cover"
-                        />
-                    </TouchableOpacity>
-                    <View style={styles.headerTextContainer}>
-                        <Text style={styles.headerSubtitle}>Daily Reflections</Text>
+                {/* Fixed Header */}
+                <View style={styles.fixedHeader}>
+                    <View style={styles.headerTopRow}>
+                        <TouchableOpacity
+                            style={styles.appIconContainer}
+                            onPress={() => setShowSmritiModal(true)}
+                            activeOpacity={0.7}
+                        >
+                            <Image
+                                source={require('../../assets/icon.png')}
+                                style={styles.appIcon}
+                                resizeMode="cover"
+                            />
+                        </TouchableOpacity>
+                        <View style={styles.headerTextContainer}>
+                            <Text style={styles.headerSubtitle}>Daily Reflections</Text>
+                        </View>
                     </View>
                 </View>
-            </View>
 
-            <PostList
-                posts={posts}
-                onRefresh={refreshPosts}
-                refreshing={refreshing}
-                ListHeaderComponent={renderScrollableHeader}
-                contentContainerStyle={styles.scrollContent}
-            />
+                <PostList
+                    posts={posts}
+                    onRefresh={refreshPosts}
+                    refreshing={refreshing}
+                    ListHeaderComponent={renderScrollableHeader}
+                    contentContainerStyle={styles.scrollContent}
+                />
 
-            {/* Smriti Modal Popup */}
-            <Modal
-                visible={showSmritiModal}
-                transparent={true}
-                animationType="fade"
-                onRequestClose={() => setShowSmritiModal(false)}
-            >
-                <TouchableOpacity
-                    style={styles.modalOverlay}
-                    activeOpacity={1}
-                    onPress={() => setShowSmritiModal(false)}
+                {/* Smriti Modal Popup */}
+                <Modal
+                    visible={showSmritiModal}
+                    transparent={true}
+                    animationType="fade"
+                    onRequestClose={() => setShowSmritiModal(false)}
                 >
                     <TouchableOpacity
+                        style={styles.modalOverlay}
                         activeOpacity={1}
-                        onPress={(e) => e.stopPropagation()}
+                        onPress={() => setShowSmritiModal(false)}
                     >
-                        <View style={styles.modalContent}>
-                            <ImageBackground
-                                source={require('../../assets/bg_card.jpg')}
-                                style={styles.card}
-                                resizeMode="cover"
-                                imageStyle={{ borderRadius: 20 }}
-                            >
-                                <View style={styles.cardImageContainer}>
-                                    <Image
-                                        source={cardData.imageUri}
-                                        style={styles.cardImage}
-                                        resizeMode="cover"
-                                    />
-                                    <View style={styles.cardOverlay} />
-                                </View>
+                        <TouchableOpacity
+                            activeOpacity={1}
+                            onPress={(e) => e.stopPropagation()}
+                        >
+                            <View style={styles.modalContent}>
+                                <ImageBackground
+                                    source={require('../../assets/bg_card.jpg')}
+                                    style={styles.card}
+                                    resizeMode="cover"
+                                    imageStyle={{ borderRadius: 20 }}
+                                >
+                                    <View style={styles.cardImageContainer}>
+                                        <Image
+                                            source={cardData.imageUri}
+                                            style={styles.cardImage}
+                                            resizeMode="cover"
+                                        />
+                                        <View style={styles.cardOverlay} />
+                                    </View>
 
-                                <View style={styles.cardContent}>
-                                    <Text style={styles.cardTitle}>{cardData.title}</Text>
+                                    <View style={styles.cardContent}>
+                                        <Text style={styles.cardTitle}>{cardData.title}</Text>
 
-                                    {cardData.author && (
-                                        <View style={styles.authorContainer}>
-                                            <Text style={styles.authorText}>{cardData.author}</Text>
-                                        </View>
-                                    )}
+                                        {cardData.author && (
+                                            <View style={styles.authorContainer}>
+                                                <Text style={styles.authorText}>{cardData.author}</Text>
+                                            </View>
+                                        )}
 
-                                    <Text style={styles.cardText}>{cardData.description}</Text>
-                                </View>
-                            </ImageBackground>
-                        </View>
+                                        <Text style={styles.cardText}>{cardData.description}</Text>
+                                    </View>
+                                </ImageBackground>
+                            </View>
+                        </TouchableOpacity>
                     </TouchableOpacity>
-                </TouchableOpacity>
-            </Modal>
-        </LinearGradient>
+                </Modal>
+            </LinearGradient>
+        </ImageBackground>
     );
 }
 

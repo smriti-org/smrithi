@@ -25,6 +25,7 @@ export default function PostCard({ post }) {
     const [textTruncated, setTextTruncated] = React.useState(false);
     const [measured, setMeasured] = React.useState(false);
     const [showModal, setShowModal] = React.useState(false);
+    const [showImageModal, setShowImageModal] = React.useState(false);
 
     // Dynamic Image Sizing
     const [aspectRatio, setAspectRatio] = React.useState(4 / 3);
@@ -91,11 +92,24 @@ export default function PostCard({ post }) {
 
                         {/* Display image if available */}
                         {imageUrl && (
-                            <Image
-                                source={{ uri: imageUrl }}
-                                style={[styles.postImage, { aspectRatio }]}
-                                resizeMode="contain"
-                            />
+                            <TouchableOpacity
+                                activeOpacity={0.9}
+                                onPress={(e) => {
+                                    e.stopPropagation();
+                                    setShowImageModal(true);
+                                }}
+                            >
+                                <View style={styles.imageWrapper}>
+                                    <Image
+                                        source={{ uri: imageUrl }}
+                                        style={styles.postImage}
+                                        resizeMode="cover"
+                                    />
+                                    <View style={styles.imageHintOverlay}>
+                                        <Text style={styles.imageHintText}>👆 Tap to view full image</Text>
+                                    </View>
+                                </View>
+                            </TouchableOpacity>
                         )}
 
                         {/* Display document link if available */}
@@ -196,6 +210,27 @@ export default function PostCard({ post }) {
                     </TouchableOpacity>
                 </TouchableOpacity>
             </Modal>
+
+            {/* Image-only Modal */}
+            <Modal
+                visible={showImageModal}
+                transparent={true}
+                animationType="fade"
+                onRequestClose={() => setShowImageModal(false)}
+            >
+                <TouchableOpacity
+                    style={styles.imageModalOverlay}
+                    activeOpacity={1}
+                    onPress={() => setShowImageModal(false)}
+                >
+                    <Image
+                        source={{ uri: imageUrl }}
+                        style={styles.fullScreenImage}
+                        resizeMode="contain"
+                    />
+                    <Text style={styles.imageModalHint}>Tap to close</Text>
+                </TouchableOpacity>
+            </Modal>
         </>
     );
 }
@@ -203,7 +238,7 @@ export default function PostCard({ post }) {
 const styles = StyleSheet.create({
     postCard: {
         backgroundColor: '#F5F1E8', // Warm vintage paper color
-        padding: SPACING.xl,
+        padding: SPACING.lg,
         marginHorizontal: SPACING.md,
         marginBottom: SPACING.lg,
         borderRadius: 16,
@@ -218,10 +253,32 @@ const styles = StyleSheet.create({
     },
     postImage: {
         width: '100%',
-        maxHeight: 300,
+        height: 250,
         backgroundColor: COLORS.border,
+    },
+    imageWrapper: {
         marginTop: SPACING.md,
         borderRadius: 12,
+        overflow: 'hidden',
+        borderWidth: 2,
+        borderColor: 'rgba(78, 52, 46, 0.15)',
+        backgroundColor: COLORS.border,
+        position: 'relative',
+    },
+    imageHintOverlay: {
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        backgroundColor: 'rgba(78, 52, 46, 0.7)',
+        paddingVertical: 6,
+        alignItems: 'center',
+    },
+    imageHintText: {
+        fontSize: 11,
+        color: '#F5F1E8',
+        fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
+        fontStyle: 'italic',
     },
     postContent: {
         // No padding needed, handled by postCard
@@ -240,7 +297,7 @@ const styles = StyleSheet.create({
         ...TYPOGRAPHY.heading,
         fontSize: 20,
         color: COLORS.primary,
-        marginBottom: SPACING.md,
+        marginBottom: SPACING.sm,
         fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
         fontWeight: '500', // Lighter weight - let body dominate
     },
@@ -358,11 +415,13 @@ const styles = StyleSheet.create({
     },
     modalImage: {
         width: '100%',
-        height: 300,
+        height: 250,
         borderRadius: 12,
         marginTop: SPACING.md,
         marginBottom: SPACING.lg,
         backgroundColor: COLORS.border,
+        borderWidth: 2,
+        borderColor: 'rgba(78, 52, 46, 0.15)',
     },
     closeHint: {
         ...TYPOGRAPHY.caption,
@@ -372,5 +431,24 @@ const styles = StyleSheet.create({
         marginTop: SPACING.lg,
         fontStyle: 'italic',
         opacity: 0.6,
+    },
+    // Image-only modal styles
+    imageModalOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0, 0, 0, 0.95)',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    fullScreenImage: {
+        width: '100%',
+        height: '90%',
+    },
+    imageModalHint: {
+        position: 'absolute',
+        bottom: 40,
+        fontSize: 14,
+        color: '#F5F1E8',
+        fontStyle: 'italic',
+        opacity: 0.7,
     },
 });
