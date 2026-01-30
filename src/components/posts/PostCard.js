@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity, Linking, Platform } from 'react-native';
+import { View, Text, StyleSheet, Image, TouchableOpacity, Linking, Platform, Modal, ScrollView } from 'react-native';
 import { COLORS, SPACING, TYPOGRAPHY, SHADOWS } from '../../styles/theme';
 
 /**
@@ -24,6 +24,8 @@ export default function PostCard({ post }) {
     const [isExpanded, setIsExpanded] = React.useState(false);
     const [textTruncated, setTextTruncated] = React.useState(false);
     const [measured, setMeasured] = React.useState(false);
+    const [showModal, setShowModal] = React.useState(false);
+    const [showImageModal, setShowImageModal] = React.useState(false);
 
     // Dynamic Image Sizing
     const [aspectRatio, setAspectRatio] = React.useState(4 / 3);
@@ -52,82 +54,191 @@ export default function PostCard({ post }) {
     };
 
     return (
-        <View style={styles.postCard}>
-            <View style={styles.postContent}>
-                {/* Decorative top divider */}
-                <View style={styles.topDivider}>
-                    <Text style={styles.decorativeIcon}>✦</Text>
-                </View>
+        <>
+            <TouchableOpacity
+                activeOpacity={0.7}
+                onPress={() => setShowModal(true)}
+            >
+                <View style={styles.postCard}>
+                    <View style={styles.postContent}>
+                        {/* Decorative top divider */}
+                        <View style={styles.topDivider}>
+                            <Text style={styles.decorativeIcon}>✦</Text>
+                        </View>
 
-                {/* Title - Clean and prominent */}
-                <Text style={styles.postTitle}>{post.title}</Text>
+                        {/* Title - Clean and prominent */}
+                        <Text style={styles.postTitle}>{post.title}</Text>
 
-                {/* Reflection content - Uninterrupted flow */}
-                <Text
-                    style={styles.postDescription}
-                    numberOfLines={measured && !isExpanded ? 6 : undefined}
-                    onTextLayout={handleTextLayout}
-                >
-                    {content}
-                </Text>
-
-                {/* Load more / Show less button */}
-                {textTruncated && (
-                    <TouchableOpacity
-                        onPress={() => setIsExpanded(!isExpanded)}
-                        style={styles.loadMoreContainer}
-                    >
-                        <Text style={styles.loadMoreText}>
-                            {isExpanded ? 'Show less ↑' : 'Load more →'}
+                        {/* Reflection content - Uninterrupted flow */}
+                        <Text
+                            style={styles.postDescription}
+                            numberOfLines={measured && !isExpanded ? 6 : undefined}
+                            onTextLayout={handleTextLayout}
+                        >
+                            {content}
                         </Text>
-                    </TouchableOpacity>
-                )}
 
-                {/* Display image if available */}
-                {imageUrl && (
+                        {/* Load more / Show less button */}
+                        {textTruncated && (
+                            <TouchableOpacity
+                                onPress={() => setIsExpanded(!isExpanded)}
+                                style={styles.loadMoreContainer}
+                            >
+                                <Text style={styles.loadMoreText}>
+                                    {isExpanded ? 'Show less ↑' : 'Load more →'}
+                                </Text>
+                            </TouchableOpacity>
+                        )}
+
+                        {/* Display image if available */}
+                        {imageUrl && (
+                            <TouchableOpacity
+                                activeOpacity={0.9}
+                                onPress={(e) => {
+                                    e.stopPropagation();
+                                    setShowImageModal(true);
+                                }}
+                            >
+                                <View style={styles.imageWrapper}>
+                                    <Image
+                                        source={{ uri: imageUrl }}
+                                        style={styles.postImage}
+                                        resizeMode="cover"
+                                    />
+                                    <View style={styles.imageHintOverlay}>
+                                        <Text style={styles.imageHintText}>👆 Tap to view full image</Text>
+                                    </View>
+                                </View>
+                            </TouchableOpacity>
+                        )}
+
+                        {/* Display document link if available */}
+                        {documentUrl && (
+                            <TouchableOpacity
+                                style={styles.documentContainer}
+                                onPress={() => Linking.openURL(documentUrl)}
+                            >
+                                <View style={styles.documentIconContainer}>
+                                    <Text style={styles.documentIcon}>📄</Text>
+                                </View>
+                                <View style={styles.documentInfo}>
+                                    <Text style={styles.documentTitle} numberOfLines={1}>
+                                        Attached Document
+                                    </Text>
+                                    <Text style={styles.documentAction}>Tap to view</Text>
+                                </View>
+                            </TouchableOpacity>
+                        )}
+
+                        {/* Divider - Signals closure */}
+                        <View style={styles.divider} />
+
+                        {/* Footer - Identity comes after meaning */}
+                        <View style={styles.footer}>
+                            <Text style={styles.footerText}>
+                                — {authorName} · {postDate}
+                            </Text>
+                        </View>
+                    </View>
+                </View>
+            </TouchableOpacity>
+
+            {/* Full-screen Modal */}
+            <Modal
+                visible={showModal}
+                transparent={true}
+                animationType="fade"
+                onRequestClose={() => setShowModal(false)}
+            >
+                <TouchableOpacity
+                    style={styles.modalOverlay}
+                    activeOpacity={1}
+                    onPress={() => setShowModal(false)}
+                >
+                    <TouchableOpacity
+                        activeOpacity={1}
+                        onPress={(e) => e.stopPropagation()}
+                        pointerEvents="box-none"
+                    >
+                        <ScrollView
+                            style={styles.modalContent}
+                            contentContainerStyle={styles.modalContentContainer}
+                        >
+                            <View style={styles.modalCard}>
+                                <View style={styles.topDivider}>
+                                    <Text style={styles.decorativeIcon}>✦</Text>
+                                </View>
+
+                                <Text style={styles.modalTitle}>{post.title}</Text>
+                                <Text style={styles.modalDescription}>{content}</Text>
+
+                                {imageUrl && (
+                                    <Image
+                                        source={{ uri: imageUrl }}
+                                        style={styles.modalImage}
+                                        resizeMode="contain"
+                                    />
+                                )}
+
+                                {documentUrl && (
+                                    <TouchableOpacity
+                                        style={styles.documentContainer}
+                                        onPress={() => Linking.openURL(documentUrl)}
+                                    >
+                                        <View style={styles.documentIconContainer}>
+                                            <Text style={styles.documentIcon}>📄</Text>
+                                        </View>
+                                        <View style={styles.documentInfo}>
+                                            <Text style={styles.documentTitle} numberOfLines={1}>
+                                                Attached Document
+                                            </Text>
+                                            <Text style={styles.documentAction}>Tap to view</Text>
+                                        </View>
+                                    </TouchableOpacity>
+                                )}
+
+                                <View style={styles.divider} />
+                                <View style={styles.footer}>
+                                    <Text style={styles.footerText}>
+                                        — {authorName} · {postDate}
+                                    </Text>
+                                </View>
+
+                                <Text style={styles.closeHint}>Tap outside to close</Text>
+                            </View>
+                        </ScrollView>
+                    </TouchableOpacity>
+                </TouchableOpacity>
+            </Modal>
+
+            {/* Image-only Modal */}
+            <Modal
+                visible={showImageModal}
+                transparent={true}
+                animationType="fade"
+                onRequestClose={() => setShowImageModal(false)}
+            >
+                <TouchableOpacity
+                    style={styles.imageModalOverlay}
+                    activeOpacity={1}
+                    onPress={() => setShowImageModal(false)}
+                >
                     <Image
                         source={{ uri: imageUrl }}
-                        style={[styles.postImage, { aspectRatio }]}
+                        style={styles.fullScreenImage}
                         resizeMode="contain"
                     />
-                )}
-
-                {/* Display document link if available */}
-                {documentUrl && (
-                    <TouchableOpacity
-                        style={styles.documentContainer}
-                        onPress={() => Linking.openURL(documentUrl)}
-                    >
-                        <View style={styles.documentIconContainer}>
-                            <Text style={styles.documentIcon}>📄</Text>
-                        </View>
-                        <View style={styles.documentInfo}>
-                            <Text style={styles.documentTitle} numberOfLines={1}>
-                                Attached Document
-                            </Text>
-                            <Text style={styles.documentAction}>Tap to view</Text>
-                        </View>
-                    </TouchableOpacity>
-                )}
-
-                {/* Divider - Signals closure */}
-                <View style={styles.divider} />
-
-                {/* Footer - Identity comes after meaning */}
-                <View style={styles.footer}>
-                    <Text style={styles.footerText}>
-                        — {authorName} · {postDate}
-                    </Text>
-                </View>
-            </View>
-        </View>
+                    <Text style={styles.imageModalHint}>Tap to close</Text>
+                </TouchableOpacity>
+            </Modal>
+        </>
     );
 }
 
 const styles = StyleSheet.create({
     postCard: {
         backgroundColor: '#F5F1E8', // Warm vintage paper color
-        padding: SPACING.xl,
+        padding: SPACING.lg,
         marginHorizontal: SPACING.md,
         marginBottom: SPACING.lg,
         borderRadius: 16,
@@ -142,8 +253,32 @@ const styles = StyleSheet.create({
     },
     postImage: {
         width: '100%',
+        height: 250,
         backgroundColor: COLORS.border,
+    },
+    imageWrapper: {
         marginTop: SPACING.md,
+        borderRadius: 12,
+        overflow: 'hidden',
+        borderWidth: 2,
+        borderColor: 'rgba(78, 52, 46, 0.15)',
+        backgroundColor: COLORS.border,
+        position: 'relative',
+    },
+    imageHintOverlay: {
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        backgroundColor: 'rgba(78, 52, 46, 0.7)',
+        paddingVertical: 6,
+        alignItems: 'center',
+    },
+    imageHintText: {
+        fontSize: 11,
+        color: '#F5F1E8',
+        fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
+        fontStyle: 'italic',
     },
     postContent: {
         // No padding needed, handled by postCard
@@ -162,7 +297,7 @@ const styles = StyleSheet.create({
         ...TYPOGRAPHY.heading,
         fontSize: 20,
         color: COLORS.primary,
-        marginBottom: SPACING.md,
+        marginBottom: SPACING.sm,
         fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
         fontWeight: '500', // Lighter weight - let body dominate
     },
@@ -240,5 +375,80 @@ const styles = StyleSheet.create({
         fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
         opacity: 0.45, // Lower contrast - signature-like
         fontStyle: 'italic',
+    },
+    // Modal styles
+    modalOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0, 0, 0, 0.85)',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    modalContent: {
+        width: '90%',
+        maxWidth: 500,
+        maxHeight: '80%',
+    },
+    modalContentContainer: {
+        paddingVertical: SPACING.lg,
+    },
+    modalCard: {
+        backgroundColor: '#F5F1E8',
+        padding: SPACING.xl,
+        borderRadius: 20,
+        ...SHADOWS.large,
+    },
+    modalTitle: {
+        ...TYPOGRAPHY.heading,
+        fontSize: 24,
+        color: COLORS.primary,
+        marginBottom: SPACING.lg,
+        fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
+        fontWeight: '600',
+    },
+    modalDescription: {
+        ...TYPOGRAPHY.body,
+        fontSize: 17,
+        color: COLORS.text,
+        lineHeight: 28,
+        fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
+        marginBottom: SPACING.lg,
+    },
+    modalImage: {
+        width: '100%',
+        height: 250,
+        borderRadius: 12,
+        marginTop: SPACING.md,
+        marginBottom: SPACING.lg,
+        backgroundColor: COLORS.border,
+        borderWidth: 2,
+        borderColor: 'rgba(78, 52, 46, 0.15)',
+    },
+    closeHint: {
+        ...TYPOGRAPHY.caption,
+        fontSize: 13,
+        color: COLORS.textLight,
+        textAlign: 'center',
+        marginTop: SPACING.lg,
+        fontStyle: 'italic',
+        opacity: 0.6,
+    },
+    // Image-only modal styles
+    imageModalOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0, 0, 0, 0.95)',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    fullScreenImage: {
+        width: '100%',
+        height: '90%',
+    },
+    imageModalHint: {
+        position: 'absolute',
+        bottom: 40,
+        fontSize: 14,
+        color: '#F5F1E8',
+        fontStyle: 'italic',
+        opacity: 0.7,
     },
 });
